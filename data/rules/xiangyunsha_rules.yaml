@@ -1,0 +1,99 @@
+# 香云纱工艺规则矩阵（可读版本，与 app/data/rules.py 对应）
+# 修改本文件不会改变运行时行为 — 真正的判定逻辑在 rules.py。
+# 用于非工程师 review、为评分提供说明文案、文档导出。
+
+shuliang_dye:
+  - id: R001
+    risk_tag: base_color_too_light
+    condition: "薯莨汁浓度 < 0.3 且 单次日晒 < 4 小时"
+    cause: 薯莨汁浓度不足，且单次日晒时长不够，底色无法充分氧化为红褐色
+    correction: 将薯莨汁浓度提高到 0.5 以上，或延长单次日晒至 6 小时以上
+    severity: medium
+
+  - id: R002
+    risk_tag: dye_cycles_insufficient
+    condition: "浸染次数 < 5"
+    cause: 薯莨浸染次数过少，单宁未在丝绸上充分沉积
+    correction: 至少完成 8 次浸染—染晒循环
+    severity: high
+
+  - id: R003
+    risk_tag: dye_temp_too_high
+    condition: "染液水温 > 50°C"
+    cause: 染液温度过高，薯莨单宁分子结构受损，沉积效率下降
+    correction: 染液水温控制在 25–35°C
+    severity: medium
+
+  - id: R004
+    risk_tag: dye_temp_too_low
+    condition: "染液水温 < 15°C"
+    cause: 染液温度过低，单宁活性不足，吸色速度过慢
+    correction: 略微提高水温到 25°C 左右
+    severity: low
+
+sun_dry:
+  - id: R005
+    risk_tag: sun_dry_insufficient
+    condition: "累计晒莨天数 < 2"
+    cause: 累计晒莨天数不足，未完成多轮氧化循环
+    correction: 至少进行 3 天循环染晒
+    severity: medium
+
+wu_process:
+  - id: R006
+    risk_tag: wu_before_dye
+    condition: "浸染次数 < 5 且 已开始过乌"
+    cause: 浸染未完成就过乌，单宁不足，无法与铁离子反应出黑亮面
+    correction: 先把浸染做满 8 次以上再过乌
+    severity: high
+
+  - id: R007
+    risk_tag: wu_uneven
+    condition: "已过乌 且 泥浆厚度 < 0.3"
+    cause: 泥浆涂得太薄，反应不均，可能出现花斑
+    correction: 厚度至少 0.5，单方向均匀涂抹
+    severity: high
+
+  - id: R008
+    risk_tag: wu_too_short
+    condition: "0 < 过乌时间 < 30 分钟"
+    cause: 过乌停留时间过短，铁单宁反应未完全
+    correction: 过乌停留至少 60 分钟
+    severity: medium
+
+  - id: R009
+    risk_tag: wu_too_long
+    condition: "过乌时间 > 120 分钟"
+    cause: 过乌时间过长，铁离子过量反应，黑亮面发灰、纤维变脆
+    correction: 过乌时间控制在 60–90 分钟
+    severity: medium
+
+  - id: R010
+    risk_tag: gloss_insufficient
+    condition: "已过乌 且 厚度 < 0.4 且 时间 < 60 分钟"
+    cause: 过乌泥薄且时间短，黑亮面光泽起不来
+    correction: 厚度 ≥ 0.5、停留 60 分钟以上，可重复 2–3 次
+    severity: high
+
+  - id: R011
+    risk_tag: wu_apply_excessive
+    condition: "涂抹次数 > 5 且 厚度 > 0.7"
+    cause: 过乌过量，布料发硬、悬垂感差
+    correction: 涂抹次数 2–4 次，单次厚度约 0.5
+    severity: low
+
+wash:
+  - id: R012
+    risk_tag: wash_temp_too_high
+    condition: "水洗水温 > 35°C"
+    cause: 水温过高，黑亮面络合物脱落，光泽流失
+    correction: 水洗温度 < 30°C，最好用冷水
+    severity: medium
+
+air_dry:
+  - id: R013
+    risk_tag: air_dry_insufficient
+    condition: "晾晒时长 < 4 小时"
+    cause: 晾晒时间不足，残留水分影响成品稳定性
+    correction: 通风背阴处晾晒至少 6 小时
+    severity: low
