@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables (NEVER commit real keys)
+.env
+.env.local
+.env.*.local
+
+# Runtime storage (DBs, vector store, generated images) — only top-level, not app/storage
+/storage/
+*.db
+*.sqlite
+*.sqlite3
+
+# Data — raw sources may be large or copyrighted
+data/raw/
+data/processed/*.bak
+data/processed/*.tmp
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+
+# Logs
+*.log
+logs/
