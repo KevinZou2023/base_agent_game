@@ -1,0 +1,92 @@
+[
+  {
+    "entry_type": "material",
+    "material_id": "white_silk_plain",
+    "material_name": "白色平纹桑蚕丝坯绸",
+    "category": "fabric",
+    "description": "香云纱最经典的坯绸，纯桑蚕丝平纹结构，吸色稳定，悬垂感佳，新手首选。",
+    "properties": {
+      "weight_gpm2": 45,
+      "weave": "plain",
+      "absorption": "high",
+      "recommended_for": "beginner"
+    },
+    "source": {"source_type": "manual_annotation", "confidence": 0.9, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "material",
+    "material_id": "mulberry_silk_satin",
+    "material_name": "桑蚕丝绸缎",
+    "category": "fabric",
+    "description": "丝面光滑，过乌后黑亮面更显光泽，但价格较高且对工艺稳定性要求更高。",
+    "properties": {
+      "weight_gpm2": 60,
+      "weave": "satin",
+      "absorption": "medium",
+      "recommended_for": "intermediate"
+    },
+    "source": {"source_type": "manual_annotation", "confidence": 0.85, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "material",
+    "material_id": "shuliang_juice",
+    "material_name": "薯莨汁（汁液）",
+    "category": "dye",
+    "description": "薯莨（Dioscorea cirrhosa）块茎榨取的红色汁液，富含单宁。是香云纱红褐底色的根源。",
+    "properties": {
+      "active_compound": "tannin",
+      "color": "red-brown",
+      "origin": "Lingnan tropical region",
+      "ph_range": "4.0-5.5"
+    },
+    "source": {"source_type": "manual_annotation", "confidence": 0.92, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "material",
+    "material_id": "shuliang_powder",
+    "material_name": "薯莨干粉",
+    "category": "dye",
+    "description": "薯莨切片晾干后磨成粉末，便于储存和按比例配制染液。",
+    "properties": {
+      "form": "powder",
+      "storage_months": 12,
+      "recommended_ratio": "1:5 with water"
+    },
+    "source": {"source_type": "manual_annotation", "confidence": 0.85, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "material",
+    "material_id": "delta_river_mud",
+    "material_name": "珠三角河涌乌泥",
+    "category": "mud",
+    "description": "珠江三角洲特有的细腻河泥，富含二价铁离子，是过乌反应的关键。颜色乌黑，无砂粒。",
+    "properties": {
+      "iron_content": "high",
+      "particle_size": "<50um",
+      "origin": "Pearl River Delta",
+      "color": "near-black"
+    },
+    "source": {"source_type": "manual_annotation", "confidence": 0.9, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "material",
+    "material_id": "clean_water",
+    "material_name": "清水（去离子或软水）",
+    "category": "auxiliary",
+    "description": "配制薯莨染液和水洗都需要软水。硬水中的钙镁会影响单宁结合效率。",
+    "properties": {
+      "hardness": "soft",
+      "recommended_ph": "6.5-7.5"
+    },
+    "source": {"source_type": "manual_annotation", "confidence": 0.82, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "material",
+    "material_id": "bamboo_pole",
+    "material_name": "竹晾杆",
+    "category": "auxiliary",
+    "description": "用于晾晒和翻面的传统工具，竹子表面不会与染液发生反应。",
+    "properties": {"material": "bamboo"},
+    "source": {"source_type": "manual_annotation", "confidence": 0.75, "reviewed_status": "reviewed"}
+  }
+]

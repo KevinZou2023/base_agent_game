@@ -1,0 +1,82 @@
+[
+  {
+    "entry_type": "parameter",
+    "parameter_id": "param_shuliang_concentration",
+    "stage": "shuliang_dye",
+    "parameter": {"name": "shuliang_concentration", "unit": "ratio", "qualified_min": 0.4, "qualified_max": 0.7, "failure_min": 0.1, "failure_max": 0.95, "description": "薯莨汁浓度（归一化），决定单次浸染的单宁沉积量"},
+    "impact_on_quality": "浓度偏低，底色偏浅；浓度过高，布料发硬且单次反应过激容易花。",
+    "source": {"source_type": "manual_annotation", "confidence": 0.88, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "parameter",
+    "parameter_id": "param_dye_cycles",
+    "stage": "shuliang_dye",
+    "parameter": {"name": "dye_cycles", "unit": "次", "qualified_min": 8, "qualified_max": 30, "failure_min": 4, "description": "薯莨浸染次数"},
+    "impact_on_quality": "次数越多底色越饱满；少于 5 次会导致底色无法沉积、过乌时无单宁可反应。",
+    "source": {"source_type": "manual_annotation", "confidence": 0.9, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "parameter",
+    "parameter_id": "param_dye_water_temp",
+    "stage": "shuliang_dye",
+    "parameter": {"name": "dye_water_temp", "unit": "°C", "qualified_min": 25, "qualified_max": 35, "failure_min": 10, "failure_max": 55, "description": "薯莨染液水温"},
+    "impact_on_quality": "过高会破坏单宁有效成分，过低则吸色速度过慢。",
+    "source": {"source_type": "manual_annotation", "confidence": 0.85, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "parameter",
+    "parameter_id": "param_sun_hours",
+    "stage": "sun_dry",
+    "parameter": {"name": "sun_hours", "unit": "小时", "qualified_min": 4, "qualified_max": 8, "failure_min": 1, "description": "单次日晒时长"},
+    "impact_on_quality": "日晒不足，单宁未能充分氧化为红褐色，底色偏浅；过长则可能局部褪色。",
+    "source": {"source_type": "manual_annotation", "confidence": 0.86, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "parameter",
+    "parameter_id": "param_sun_total_days",
+    "stage": "sun_dry",
+    "parameter": {"name": "sun_total_days", "unit": "天", "qualified_min": 3, "qualified_max": 10, "description": "累计染晒循环天数"},
+    "impact_on_quality": "累计天数越多，底色层次越饱满；少于 2 天会导致过乌时无足够单宁参与反应。",
+    "source": {"source_type": "manual_annotation", "confidence": 0.84, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "parameter",
+    "parameter_id": "param_wu_mud_thickness",
+    "stage": "wu_process",
+    "parameter": {"name": "wu_mud_thickness", "unit": "ratio", "qualified_min": 0.4, "qualified_max": 0.7, "failure_min": 0.2, "failure_max": 0.9, "description": "过乌泥浆涂抹厚度（归一化）"},
+    "impact_on_quality": "过薄会反应不均匀出现花斑；过厚会让布料硬挺、影响悬垂感。",
+    "source": {"source_type": "manual_annotation", "confidence": 0.88, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "parameter",
+    "parameter_id": "param_wu_duration_minutes",
+    "stage": "wu_process",
+    "parameter": {"name": "wu_duration_minutes", "unit": "分钟", "qualified_min": 60, "qualified_max": 90, "failure_min": 20, "failure_max": 120, "description": "过乌停留时间"},
+    "impact_on_quality": "短于 30 分钟黑亮面发不出来；超过 120 分钟则黑面发灰、纤维变脆。",
+    "source": {"source_type": "manual_annotation", "confidence": 0.9, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "parameter",
+    "parameter_id": "param_wu_apply_count",
+    "stage": "wu_process",
+    "parameter": {"name": "wu_apply_count", "unit": "次", "qualified_min": 2, "qualified_max": 4, "failure_max": 7, "description": "过乌涂抹次数"},
+    "impact_on_quality": "次数过少光泽不足；超过 5 次会让布料发硬、显得呆板。",
+    "source": {"source_type": "manual_annotation", "confidence": 0.84, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "parameter",
+    "parameter_id": "param_wash_water_temp",
+    "stage": "wash",
+    "parameter": {"name": "wash_water_temp", "unit": "°C", "qualified_min": 15, "qualified_max": 30, "failure_max": 40, "description": "水洗水温"},
+    "impact_on_quality": "过高会冲掉已成型的黑亮面，光泽流失。",
+    "source": {"source_type": "manual_annotation", "confidence": 0.83, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "parameter",
+    "parameter_id": "param_air_dry_hours",
+    "stage": "air_dry",
+    "parameter": {"name": "air_dry_hours", "unit": "小时", "qualified_min": 6, "qualified_max": 24, "failure_min": 2, "description": "晾晒时长"},
+    "impact_on_quality": "不足会残留水分影响成品手感和稳定性。",
+    "source": {"source_type": "manual_annotation", "confidence": 0.8, "reviewed_status": "reviewed"}
+  }
+]

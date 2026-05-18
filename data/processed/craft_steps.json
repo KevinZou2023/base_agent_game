@@ -1,0 +1,122 @@
+[
+  {
+    "entry_type": "craft_step",
+    "step_id": "prepare_silk",
+    "step_name": "坯绸准备",
+    "stage": "prepare",
+    "purpose": "选取适合的白色坯绸作为染色基础，是香云纱品质的起点。",
+    "procedure": "选用纯桑蚕丝白绸或平纹丝绸，剪裁规整、检查无破损。需先用清水反复浸洗去浆和杂质，再阴干备用。",
+    "parameter_ranges": [
+      {"name": "fabric_weight", "unit": "g/m²", "qualified_min": 35, "qualified_max": 55, "description": "适合香云纱的丝绸克重区间"}
+    ],
+    "cautions": [
+      "坯绸必须充分去浆，否则薯莨汁吸附不均",
+      "避免使用化纤混纺料，否则过乌反应无法形成"
+    ],
+    "source": {"source_type": "manual_annotation", "confidence": 0.9, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "craft_step",
+    "step_id": "shuliang_dye_step",
+    "step_name": "薯莨浸染",
+    "stage": "shuliang_dye",
+    "purpose": "让薯莨汁中的单宁与丝绸纤维充分结合，逐层染上红褐底色。",
+    "procedure": "将坯绸完全浸入薯莨汁中 15–30 分钟，捞起拧干，平铺日晒至七成干后再次浸染。如此反复 8–30 次。",
+    "parameter_ranges": [
+      {"name": "shuliang_concentration", "unit": "ratio", "qualified_min": 0.4, "qualified_max": 0.7, "description": "薯莨汁浓度合格区间"},
+      {"name": "dye_water_temp", "unit": "°C", "qualified_min": 25, "qualified_max": 35, "failure_max": 50, "description": "染液温度，过高会破坏单宁"},
+      {"name": "dye_cycles", "unit": "次", "qualified_min": 8, "qualified_max": 30, "description": "浸染次数，次数越多底色越深"}
+    ],
+    "cautions": [
+      "薯莨汁浓度过低会导致底色偏浅",
+      "水温过高会破坏单宁的有效成分",
+      "每次浸染必须配合日晒才能让单宁充分氧化"
+    ],
+    "source": {"source_type": "manual_annotation", "confidence": 0.92, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "craft_step",
+    "step_id": "seal_liquid_step",
+    "step_name": "封莨水",
+    "stage": "seal_liquid",
+    "purpose": "用高浓度薯莨汁封闭丝绸表面，使底色更加饱满稳定。",
+    "procedure": "在多次浸染后，用浓度较高的薯莨汁刷涂或浸泡一次，作为后续过乌前的密封步骤。",
+    "parameter_ranges": [
+      {"name": "shuliang_concentration", "unit": "ratio", "qualified_min": 0.7, "qualified_max": 1.0, "description": "封莨水所用浓度，比常规浸染更高"}
+    ],
+    "cautions": [
+      "封莨水只在浸染基本完成后做一次，过早或过多会让布料发硬"
+    ],
+    "source": {"source_type": "manual_annotation", "confidence": 0.85, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "craft_step",
+    "step_id": "sun_dry_step",
+    "step_name": "晒莨",
+    "stage": "sun_dry",
+    "purpose": "通过日晒让薯莨中的单宁在丝绸上发生氧化反应，逐渐形成红褐底色。",
+    "procedure": "将浸染后的丝绸平铺在草坪或晒场上，阳光直射 4–8 小时，期间翻面一次确保均匀。多日循环染晒。",
+    "parameter_ranges": [
+      {"name": "sun_hours", "unit": "小时", "qualified_min": 4, "qualified_max": 8, "description": "单次日晒时长"},
+      {"name": "sun_total_days", "unit": "天", "qualified_min": 3, "qualified_max": 10, "description": "累计晒莨天数"}
+    ],
+    "cautions": [
+      "日晒不足底色无法稳定，会偏浅",
+      "暴雨或潮湿天气会前功尽弃，需重新染晒",
+      "需要选择背风通透的草坪，避免污染"
+    ],
+    "source": {"source_type": "manual_annotation", "confidence": 0.9, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "craft_step",
+    "step_id": "wu_process_step",
+    "step_name": "过乌",
+    "stage": "wu_process",
+    "purpose": "将含铁丰富的河泥涂抹于丝绸一面，铁离子与薯莨单宁反应生成黑色 FeIII-单宁络合物，形成标志性的黑亮面。",
+    "procedure": "在凉爽阴天的清晨进行。将珠三角河涌的细腻乌黑河泥均匀涂抹到丝绸一侧，静置 60–90 分钟后开始翻动检查反应进程。",
+    "parameter_ranges": [
+      {"name": "wu_mud_thickness", "unit": "ratio", "qualified_min": 0.4, "qualified_max": 0.7, "description": "泥浆涂抹厚度（归一化）"},
+      {"name": "wu_duration_minutes", "unit": "分钟", "qualified_min": 60, "qualified_max": 90, "failure_max": 120, "description": "过乌停留时间"},
+      {"name": "wu_apply_count", "unit": "次", "qualified_min": 2, "qualified_max": 4, "description": "涂抹次数"}
+    ],
+    "cautions": [
+      "过乌必须在浸染充分后进行，否则没有单宁可反应",
+      "时间过短黑亮面发不出来，过长则发灰且布料发脆",
+      "涂抹必须均匀，否则会出现花斑",
+      "传统在拂晓时进行，阳光直射会让反应过激"
+    ],
+    "source": {"source_type": "manual_annotation", "confidence": 0.93, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "craft_step",
+    "step_id": "wash_step",
+    "step_name": "水洗",
+    "stage": "wash",
+    "purpose": "洗去表层河泥，让黑亮面显露出来。",
+    "procedure": "在清水中反复漂洗，揉搓除去残泥，但动作要轻、水温要低，避免冲掉已形成的黑亮面。",
+    "parameter_ranges": [
+      {"name": "wash_water_temp", "unit": "°C", "qualified_min": 15, "qualified_max": 30, "failure_min": 0, "failure_max": 35, "description": "水洗水温"}
+    ],
+    "cautions": [
+      "水温高于 35°C 会让黑亮面脱落，光泽流失",
+      "切勿使用碱性洗涤剂"
+    ],
+    "source": {"source_type": "manual_annotation", "confidence": 0.88, "reviewed_status": "reviewed"}
+  },
+  {
+    "entry_type": "craft_step",
+    "step_id": "air_dry_step",
+    "step_name": "晾晒",
+    "stage": "air_dry",
+    "purpose": "完成成品的最后定型，让黑亮面光泽充分显现，红褐底色稳定。",
+    "procedure": "通风背阴处自然晾晒至少 6 小时，避免阳光直射造成颜色不均。",
+    "parameter_ranges": [
+      {"name": "air_dry_hours", "unit": "小时", "qualified_min": 6, "qualified_max": 24, "description": "晾晒时长"}
+    ],
+    "cautions": [
+      "不可在阳光下暴晒，否则黑亮面会褪色不均",
+      "晾晒不足会残留水分影响成品手感"
+    ],
+    "source": {"source_type": "manual_annotation", "confidence": 0.86, "reviewed_status": "reviewed"}
+  }
+]
