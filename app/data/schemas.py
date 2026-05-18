@@ -306,3 +306,67 @@ class AgentResponse(BaseModel):
     operation_summary: str = ""
     stage: GameStage = GameStage.TASK
     debug: dict[str, Any] = Field(default_factory=dict)
+
+
+# ---------------------------------------------------------------------------
+# HTTP API request / response models (used by FastAPI routes)
+# ---------------------------------------------------------------------------
+
+
+class MasterChatRequest(BaseModel):
+    """POST /api/v1/master/chat body."""
+
+    player_state: PlayerState
+    message: Optional[str] = None
+    operation_event: Optional[dict[str, Any]] = None
+
+
+class ArtworkGenerateRequest(BaseModel):
+    """POST /api/v1/artwork/generate body."""
+
+    player_id: str
+    parameters: XiangyunshaParameters
+    task_theme: Optional[str] = None
+    target_pattern: Optional[str] = None
+
+
+class ArtworkGenerateResponse(BaseModel):
+    artwork_id: str
+    image_url: str = Field(description="本地静态资源 URL，例如 /static/images/art_001.png")
+    original_image_url: Optional[str] = Field(default=None, description="通义万相返回的原始 URL")
+    prompt_used: str
+    negative_prompt: str
+    style_tags: list[str] = Field(default_factory=list)
+    quality_hint: str = "high"
+    status: str = "done"
+    parameters: XiangyunshaParameters
+    rule_check_passed: bool = True
+    risk_tags: list[str] = Field(default_factory=list)
+    created_at: datetime
+
+
+class ArtworkSummary(BaseModel):
+    artwork_id: str
+    task_theme: Optional[str] = None
+    image_url: Optional[str] = None
+    status: str
+    created_at: datetime
+
+
+class UserStateResponse(BaseModel):
+    player_id: str
+    nickname: str
+    level: str
+    created_at: datetime
+    artworks: list[ArtworkSummary] = Field(default_factory=list)
+    recent_risk_tags: list[str] = Field(default_factory=list)
+
+
+class UserStateUpdate(BaseModel):
+    nickname: Optional[str] = None
+    level: Optional[str] = None
+
+
+class ErrorResponse(BaseModel):
+    detail: str
+    code: str = "internal_error"
