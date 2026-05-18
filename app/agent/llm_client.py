@@ -1,14 +1,18 @@
-"""LLM client abstraction.
+"""LLM client abstraction with function calling (tool_calls) support.
 
 Default backend: DashScope Qwen (`qwen-plus`).
 Backup backend: DeepSeek (`deepseek-chat`) — OpenAI-compatible HTTP.
 
-Swappable via factory `get_llm_client(backend=...)`.
+`LLMClient.chat()` returns a `ChatResponse` that may carry either a final
+text answer or a list of `tool_calls`. The Agent loop is responsible for
+executing the tool calls and feeding results back.
 """
 
 from __future__ import annotations
 
+import json
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 from typing import Any, Literal, TypedDict
 
 import dashscope
@@ -24,9 +28,47 @@ from app.utils.logger import logger
 # ---------------------------------------------------------------------------
 
 
-class ChatMessage(TypedDict):
-    role: Literal["system", "user", "assistant"]
+class ChatMessage(TypedDict, total=False):
+    """OpenAI-style chat message. Some fields only apply to certain roles."""
+
+    role: Literal["system", "user", "assistant", "tool"]
     content: str
+    tool_call_id: str          # only when role == "tool"
+    name: str                  # only when role == "tool"
+    tool_calls: list[dict]     # only when role == "assistant" and tool calls were made
+
+
+@dataclass
+class ToolCall:
+    """A single tool invocation requested by the LLM."""
+
+    id: str
+    name: str
+    arguments: dict[str, Any] = field(default_factory=dict)
+
+    def to_message_fragment(self) -> dict[str, Any]:
+        """Render this tool_call back into the assistant message format the LLM expects."""
+        return {
+            "id": self.id,
+            "type": "function",
+            "function": {
+                "name": self.name,
+                "arguments": json.dumps(self.arguments, ensure_ascii=False),
+            },
+        }
+
+
+@dataclass
+class ChatResponse:
+    """Unified response shape across backends."""
+
+    content: str = ""
+    tool_calls: list[ToolCall] = field(default_factory=list)
+    raw: Any = None
+
+    @property
+    def has_tool_calls(self) -> bool:
+        return bool(self.tool_calls)
 
 
 # ---------------------------------------------------------------------------
@@ -35,18 +77,20 @@ class ChatMessage(TypedDict):
 
 
 class LLMClient(ABC):
-    """Provider-agnostic chat interface."""
+    """Provider-agnostic chat interface supporting function calling."""
 
     @abstractmethod
     def chat(
         self,
         messages: list[ChatMessage],
         *,
+        tools: list[dict] | None = None,
+        tool_choice: str | dict | None = None,
         temperature: float = 0.7,
         max_tokens: int = 1024,
         **kwargs: Any,
-    ) -> str:
-        """Send a chat completion request and return the assistant text."""
+    ) -> ChatResponse:
+        """Send a chat completion request. May return content or tool_calls."""
 
 
 # ---------------------------------------------------------------------------
@@ -70,19 +114,28 @@ class DashScopeLLM(LLMClient):
         self,
         messages: list[ChatMessage],
         *,
+        tools: list[dict] | None = None,
+        tool_choice: str | dict | None = None,
         temperature: float = 0.7,
         max_tokens: int = 1024,
         **kwargs: Any,
-    ) -> str:
-        resp = dashscope.Generation.call(
-            api_key=self.api_key,
-            model=self.model,
-            messages=messages,
-            result_format="message",
-            temperature=temperature,
-            max_tokens=max_tokens,
-            **kwargs,
-        )
+    ) -> ChatResponse:
+        call_kwargs: dict[str, Any] = {
+            "api_key": self.api_key,
+            "model": self.model,
+            "messages": messages,
+            "result_format": "message",
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+        }
+        if tools:
+            call_kwargs["tools"] = tools
+            # Qwen uses 'auto' by default; expose tool_choice if caller asks
+            if tool_choice is not None:
+                call_kwargs["tool_choice"] = tool_choice
+        call_kwargs.update(kwargs)
+
+        resp = dashscope.Generation.call(**call_kwargs)
         if resp.status_code != 200:
             logger.error(
                 "DashScope chat failed: status={} code={} msg={}",
@@ -91,7 +144,26 @@ class DashScopeLLM(LLMClient):
                 resp.message,
             )
             raise RuntimeError(f"DashScope chat error: {resp.message}")
-        return resp.output.choices[0].message.content.strip()
+
+        message = resp.output.choices[0].message
+        content = (message.get("content") or "").strip()
+        tool_calls: list[ToolCall] = []
+        for tc in message.get("tool_calls") or []:
+            func = tc.get("function", {})
+            raw_args = func.get("arguments") or "{}"
+            try:
+                args = json.loads(raw_args) if isinstance(raw_args, str) else raw_args
+            except json.JSONDecodeError:
+                logger.warning("Tool args not JSON: {}", raw_args)
+                args = {}
+            tool_calls.append(
+                ToolCall(
+                    id=tc.get("id") or f"call_{len(tool_calls)}",
+                    name=func.get("name", ""),
+                    arguments=args,
+                )
+            )
+        return ChatResponse(content=content, tool_calls=tool_calls, raw=resp)
 
 
 # ---------------------------------------------------------------------------
@@ -117,10 +189,24 @@ class DeepSeekLLM(LLMClient):
         self,
         messages: list[ChatMessage],
         *,
+        tools: list[dict] | None = None,
+        tool_choice: str | dict | None = None,
         temperature: float = 0.7,
         max_tokens: int = 1024,
         **kwargs: Any,
-    ) -> str:
+    ) -> ChatResponse:
+        payload: dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+        }
+        if tools:
+            payload["tools"] = tools
+            if tool_choice is not None:
+                payload["tool_choice"] = tool_choice
+        payload.update(kwargs)
+
         with httpx.Client(timeout=60.0) as client:
             r = client.post(
                 self.BASE_URL,
@@ -128,17 +214,24 @@ class DeepSeekLLM(LLMClient):
                     "Authorization": f"Bearer {self.api_key}",
                     "Content-Type": "application/json",
                 },
-                json={
-                    "model": self.model,
-                    "messages": messages,
-                    "temperature": temperature,
-                    "max_tokens": max_tokens,
-                    **kwargs,
-                },
+                json=payload,
             )
             r.raise_for_status()
             data = r.json()
-            return data["choices"][0]["message"]["content"].strip()
+
+        message = data["choices"][0]["message"]
+        content = (message.get("content") or "").strip()
+        tool_calls: list[ToolCall] = []
+        for tc in message.get("tool_calls") or []:
+            func = tc.get("function", {})
+            try:
+                args = json.loads(func.get("arguments") or "{}")
+            except json.JSONDecodeError:
+                args = {}
+            tool_calls.append(
+                ToolCall(id=tc.get("id", ""), name=func.get("name", ""), arguments=args)
+            )
+        return ChatResponse(content=content, tool_calls=tool_calls, raw=data)
 
 
 # ---------------------------------------------------------------------------
@@ -165,6 +258,8 @@ def get_llm_client(backend: BackendName = "dashscope") -> LLMClient:
 
 __all__ = [
     "ChatMessage",
+    "ToolCall",
+    "ChatResponse",
     "LLMClient",
     "DashScopeLLM",
     "DeepSeekLLM",

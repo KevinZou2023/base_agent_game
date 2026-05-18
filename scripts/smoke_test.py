@@ -122,6 +122,21 @@ SCENARIOS: list[dict] = [
         "message": None,
         "level": LearnerLevel.INTERMEDIATE,
     },
+    {
+        "name": "H. 学徒主动提问工艺细节 → 期望 Agent 调 knowledge_search",
+        "state_kwargs": {},
+        "event": None,
+        "message": "师傅，为什么晒莨非得三天以上？我晒一天不行吗？",
+        "level": LearnerLevel.BEGINNER,
+    },
+    {
+        "name": "I. 连续 3 次同样错误 → 期望 Agent 调 learning_path",
+        "state_kwargs": {"wu_duration_minutes": 130.0},
+        "event": {"type": "param_change", "changes": {"wu_duration_minutes": 130.0}},
+        "message": None,
+        "level": LearnerLevel.BEGINNER,
+        "preload_history": ["wu_too_long", "wu_too_long"],  # plus this turn = 3
+    },
 ]
 
 
@@ -131,8 +146,23 @@ SCENARIOS: list[dict] = [
 
 
 def run_scenario(agent: MasterAgent, idx: int, scenario: dict) -> None:
+    from datetime import datetime
+    from app.data.schemas import GameStage as GS, LearningEvent
+
     level = scenario.get("level", LearnerLevel.BEGINNER)
     state = _make_state(level=level, **scenario.get("state_kwargs", {}))
+
+    # Pre-load fake history if requested
+    for tag in scenario.get("preload_history", []):
+        state.history.append(
+            LearningEvent(
+                occurred_at=datetime.utcnow(),
+                stage=GS.PARAMETER,
+                risk_tag=tag,
+                note="(preload)",
+            )
+        )
+
     print()
     print("=" * 78)
     print(f"[#{idx}] {scenario['name']}")
@@ -141,6 +171,8 @@ def run_scenario(agent: MasterAgent, idx: int, scenario: dict) -> None:
         print(f"  event={scenario['event']}")
     if scenario.get("message"):
         print(f"  message={scenario['message']}")
+    if scenario.get("preload_history"):
+        print(f"  preload_history={scenario['preload_history']}")
     print("-" * 78)
 
     response = agent.respond(
@@ -149,9 +181,14 @@ def run_scenario(agent: MasterAgent, idx: int, scenario: dict) -> None:
         operation_event=scenario.get("event"),
     )
 
+    tool_calls = response.debug.get("tool_calls", [])
     print(f"风险标签 : {response.risk_tags or '无'}")
     print(f"教学策略 : {response.hint_type} (level {response.intervention_level})")
     print(f"操作总结 : {response.operation_summary}")
+    print(f"工具调用 : {len(tool_calls)} 次")
+    for tc in tool_calls:
+        args_short = str(tc.get("arguments", {}))[:80]
+        print(f"  → {tc['name']}({args_short})")
     print(f"检索命中 : {response.knowledge_used or '—'}")
     print(f"师傅回复 : {response.master_reply}")
 
