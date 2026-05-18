@@ -284,3 +284,25 @@ class PlayerState(BaseModel):
     task_theme: Optional[str] = None  # e.g. "端午 · 红褐黑亮方巾"
     target_pattern: Optional[str] = None
     history: list[LearningEvent] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Agent I/O (what the master Agent returns to the caller / API layer)
+# ---------------------------------------------------------------------------
+
+
+class AgentResponse(BaseModel):
+    """Structured output of one MasterAgent.respond() call."""
+
+    master_reply: str = Field(description="师傅口语化反馈（面向玩家）")
+    risk_tags: list[str] = Field(default_factory=list)
+    hint_type: str = Field(default="explicit", description="explicit/probe/warn/encourage/silent")
+    intervention_level: int = Field(default=1, ge=0, le=3)
+    recommended_actions: list[str] = Field(default_factory=list)
+    knowledge_used: list[str] = Field(
+        default_factory=list,
+        description="检索命中的知识 id 列表（透明化，方便复盘）",
+    )
+    operation_summary: str = ""
+    stage: GameStage = GameStage.TASK
+    debug: dict[str, Any] = Field(default_factory=dict)
