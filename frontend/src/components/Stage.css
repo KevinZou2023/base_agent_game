@@ -1,0 +1,19 @@
+.stage-viewport {
+  position: fixed;
+  inset: 0;
+  background: var(--letterbox, #1a130a);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The canvas keeps its full logical size in layout; transform: scale() only
+   affects paint, so flex keeps it centered while it scales around its middle. */
+.stage-canvas {
+  position: relative;
+  flex: 0 0 auto;
+  transform-origin: center center;
+  overflow: hidden;
+  user-select: none;
+}

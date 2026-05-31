@@ -1,0 +1,33 @@
+.ornate-frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Each ring is a thick border with a transparent center, stacked inward. */
+.of-ring {
+  position: absolute;
+  border-style: solid;
+}
+
+.of-brown {
+  inset: 0;
+  border-width: 16px;
+  border-color: #5b3f1f;
+  border-radius: 72px;
+}
+
+.of-cream {
+  inset: 16px;
+  border-width: 48px;
+  border-color: #f2e4c5;
+  border-radius: 56px;
+}
+
+.of-keyline {
+  inset: 64px;
+  border-width: 6px;
+  border-color: #5b3f1f;
+  border-radius: 36px;
+}

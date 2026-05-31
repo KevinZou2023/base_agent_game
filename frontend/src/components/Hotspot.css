@@ -1,0 +1,23 @@
+.hotspot {
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 247, 218, 0.95) 28%,
+    rgba(255, 231, 136, 0.45) 52%,
+    rgba(255, 231, 136, 0) 72%
+  );
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  animation: hotspot-pulse 2.2s ease-in-out infinite;
+  transition: transform 0.12s ease;
+}
+
+.hotspot:hover {
+  transform: scale(1.12);
+}
+
+@keyframes hotspot-pulse {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}

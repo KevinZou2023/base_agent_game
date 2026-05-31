@@ -1,0 +1,35 @@
+.weather-overlay {
+  pointer-events: none;
+  border-radius: 40px;
+  z-index: 5;
+}
+
+/* 多云 — soft cool grey wash */
+.weather-cloudy {
+  background: linear-gradient(180deg, rgba(120, 130, 140, 0.32), rgba(120, 130, 140, 0.12));
+}
+
+/* 阴雨 — bluish dim + animated diagonal rain streaks */
+.weather-rainy {
+  background:
+    repeating-linear-gradient(
+      72deg,
+      rgba(220, 230, 240, 0.32) 0px,
+      rgba(220, 230, 240, 0.32) 2px,
+      transparent 2px,
+      transparent 22px
+    ),
+    linear-gradient(180deg, rgba(40, 55, 75, 0.4), rgba(40, 55, 75, 0.22));
+  background-size: 220px 220px, 100% 100%;
+  animation: rain-fall 0.5s linear infinite;
+}
+
+@keyframes rain-fall {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 70px 220px, 0 0; }
+}
+
+.weather-toggle {
+  cursor: pointer;
+  z-index: 60;
+}

@@ -1,0 +1,58 @@
+.dye-swatch-wrap {
+  cursor: pointer;
+}
+
+.dye-swatch {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.12s ease;
+}
+
+.dye-swatch-wrap:hover .dye-swatch {
+  transform: scale(1.05);
+}
+
+/* 挑花纹2 — bottom pattern picker strip */
+.dye-strip {
+  display: flex;
+  gap: 40px;
+  padding: 40px;
+  background: #cfc4ac;
+  border-radius: 28px;
+  box-shadow: inset 0 0 0 8px #837664;
+}
+
+.dye-strip-slot {
+  flex: 1;
+  background: #efe8db;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.1s ease, filter 0.12s ease;
+}
+.dye-strip-slot:hover {
+  filter: brightness(1.05);
+  transform: translateY(-6px);
+}
+.dye-strip-slot img {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+}
+
+/* 等待时间 — dyeing overlay + countdown */
+.dye-wait-overlay {
+  background: rgba(30, 19, 3, 0.92);
+  border-radius: 40px;
+}
+.dye-wait-timer {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 150px;
+  color: #e5e5e5;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+}

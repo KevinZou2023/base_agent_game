@@ -1,0 +1,39 @@
+/* ---- global reset ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+  /* dark letterbox surround behind the fixed game canvas */
+  background: #1a130a;
+  color: #2b1d0e;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+/* font roles */
+:root {
+  --font-title: 'Yuji Mai', 'Ma Shan Zheng', 'Noto Serif SC', serif;
+  --font-brush: 'Ma Shan Zheng', 'Noto Serif SC', serif;
+  --font-ui: 'Noto Serif SC', 'Songti SC', serif;
+}

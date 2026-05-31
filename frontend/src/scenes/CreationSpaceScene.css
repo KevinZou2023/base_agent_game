@@ -1,0 +1,57 @@
+.cs-frame {
+  background: #cfc4ac;
+  border-radius: 24px;
+  padding: 22px;
+  box-shadow: 0 8px 20px rgba(40, 28, 12, 0.3);
+}
+
+.cs-cloth {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #efe8db;
+}
+
+.cs-date,
+.cs-score {
+  font-family: var(--font-ui);
+  font-size: 65px;
+  color: #837664;
+  display: flex;
+  align-items: center;
+}
+
+.cs-score {
+  font-weight: 700;
+}
+
+.cs-tag {
+  font-family: var(--font-brush);
+  font-size: 70px;
+  color: #837664;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #efe8db;
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 5px #cfc4ac;
+}
+
+.cs-personal {
+  font-family: var(--font-brush);
+  font-size: 65px;
+  color: #837664;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #cfc4ac;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 5px #837664;
+}
+
+.cs-arrow {
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}

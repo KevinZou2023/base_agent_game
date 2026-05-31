@@ -28,6 +28,9 @@ data/raw/
 data/processed/*.bak
 data/processed/*.tmp
 
+# Figma design cache (API dumps + rendered refs, may be large)
+.figma-cache/
+
 # IDE / OS
 .idea/
 .vscode/

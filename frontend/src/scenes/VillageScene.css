@@ -1,0 +1,26 @@
+.village-plaque {
+  background: #ebe5d7;
+  box-shadow: inset 0 0 0 10px #543f27, 0 8px 18px rgba(40, 28, 12, 0.35);
+  border-radius: 16px;
+  color: #543f27;
+  font-family: var(--font-brush);
+  font-size: 58px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 0 50px;
+  cursor: pointer;
+  transition: filter 0.12s ease;
+}
+
+.village-plaque:hover {
+  filter: brightness(1.06);
+}
+
+.village-prompt {
+  font-family: var(--font-brush);
+  font-size: 65px;
+  color: #543f27;
+  display: grid;
+  place-items: center;
+}
