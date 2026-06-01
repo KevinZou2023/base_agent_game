@@ -1,0 +1,92 @@
+.ai-insight {
+  position: absolute;
+  right: 150px;
+  top: 250px;
+  width: 1080px;
+  padding: 36px 42px 28px;
+  background: linear-gradient(180deg, rgba(14, 11, 8, 0.84) 0%, rgba(10, 8, 6, 0.74) 100%);
+  border: 1px solid rgba(200, 154, 106, 0.28);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+  color: #e8dcc6;
+  font-family: var(--font-ui);
+}
+
+.ai-insight-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 22px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(200, 154, 106, 0.18);
+}
+.ai-insight-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #46d27a;
+  box-shadow: 0 0 18px #46d27a;
+  animation: ai-pulse 1.4s ease-in-out infinite;
+}
+@keyframes ai-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.7); }
+}
+.ai-insight-title { font-size: 38px; letter-spacing: 0.12em; color: #f3e7cf; }
+.ai-insight-title b { color: #f0c089; font-weight: 600; }
+.ai-insight-live {
+  margin-left: auto;
+  font-size: 26px;
+  letter-spacing: 0.22em;
+  color: #46d27a;
+}
+
+.ai-step {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 22px;
+  padding: 15px 0;
+  animation: ai-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes ai-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+.ai-step-ic {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 32px;
+  background: rgba(200, 154, 106, 0.12);
+  border: 1px solid rgba(200, 154, 106, 0.25);
+}
+.ai-step-tag { font-size: 25px; letter-spacing: 0.18em; color: #c89a6a; margin-bottom: 6px; }
+.ai-step-title { font-size: 34px; color: #f3e7cf; line-height: 1.35; }
+.ai-step-body { font-size: 30px; color: #c2b196; line-height: 1.5; margin-top: 6px; }
+.ai-step-body.mono {
+  font-family: var(--font-mono, ui-monospace, "Cascadia Code", monospace);
+  font-size: 26px;
+  color: #9fd6b0;
+  word-break: break-word;
+}
+
+/* per-kind accents */
+.ai-step.rule .ai-step-ic { border-color: rgba(255, 180, 84, 0.45); background: rgba(255, 180, 84, 0.1); }
+.ai-step.tool .ai-step-ic,
+.ai-step.rag .ai-step-ic { border-color: rgba(127, 214, 160, 0.4); background: rgba(127, 214, 160, 0.08); }
+.ai-step.say .ai-step-ic { border-color: rgba(240, 192, 137, 0.5); background: rgba(240, 192, 137, 0.1); }
+.ai-step.say .ai-step-body { color: #ecd6b2; font-style: italic; }
+.ai-step.image .ai-step-ic { border-color: rgba(224, 138, 192, 0.45); background: rgba(224, 138, 192, 0.09); }
+
+.ai-insight-foot {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(200, 154, 106, 0.18);
+  font-size: 24px;
+  letter-spacing: 0.1em;
+  color: #8a7a62;
+  text-align: center;
+}

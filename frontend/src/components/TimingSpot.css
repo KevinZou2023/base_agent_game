@@ -1,0 +1,147 @@
+.tspot {
+  display: grid;
+  place-items: center;
+}
+.tspot-idle,
+.tspot-active {
+  cursor: pointer;
+}
+.tspot-disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.5) opacity(0.6);
+}
+
+.tspot-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 247, 218, 0.95) 26%,
+    rgba(255, 231, 136, 0.4) 52%,
+    rgba(255, 231, 136, 0) 72%
+  );
+  animation: ts-pulse 2s ease-in-out infinite;
+}
+@keyframes ts-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.07); }
+}
+
+/* idle icons */
+.tspot-icon {
+  position: relative;
+}
+.tspot-tuber {
+  width: 96px;
+  height: 116px;
+  background: radial-gradient(ellipse at 38% 30%, #8a5a32, #5b3a1d 70%);
+  border-radius: 52% 48% 46% 54% / 60% 58% 42% 40%;
+  box-shadow: inset -8px -10px 16px rgba(40, 22, 10, 0.5), 0 6px 12px rgba(40, 28, 12, 0.35);
+}
+.tspot-mud {
+  width: 130px;
+  height: 84px;
+  background: radial-gradient(ellipse at 42% 28%, #6b5a48, #3f342a 75%);
+  border-radius: 50% 50% 46% 54% / 70% 70% 40% 40%;
+  box-shadow: inset -6px -8px 14px rgba(20, 14, 8, 0.55), 0 6px 12px rgba(40, 28, 12, 0.35);
+}
+.tspot-cloth {
+  width: 124px;
+  height: 100px;
+  background: linear-gradient(160deg, #efe8db, #cdbfa2);
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 4px rgba(131, 118, 100, 0.5), 0 6px 12px rgba(40, 28, 12, 0.3);
+}
+.tspot-cloth::after {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 50%;
+  height: 4px;
+  background: rgba(131, 118, 100, 0.5);
+}
+.tspot-dug {
+  width: 150px;
+  height: 60px;
+  background: radial-gradient(ellipse, rgba(60, 40, 22, 0.5), transparent 70%);
+  border-radius: 50%;
+}
+
+/* timing gauge */
+.tspot-gauge {
+  position: absolute;
+  top: -64px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 48px;
+  background: #efe8db;
+  border-radius: 26px;
+  box-shadow: inset 0 0 0 6px #837664, 0 6px 14px rgba(40, 28, 12, 0.35);
+  overflow: hidden;
+}
+.tspot-sweet {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 38%;
+  width: 24%;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(74, 140, 90, 0.55),
+    rgba(74, 140, 90, 0.55) 8px,
+    rgba(74, 140, 90, 0.38) 8px,
+    rgba(74, 140, 90, 0.38) 16px
+  );
+}
+.tspot-marker {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  width: 16px;
+  margin-left: -8px;
+  background: #3a2a18;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(40, 28, 12, 0.5);
+}
+
+.tspot-hint {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-brush);
+  font-size: 40px;
+  color: #6d5c48;
+  text-shadow: 0 2px 6px rgba(245, 235, 210, 0.8);
+}
+.tspot-hint-go {
+  color: #4a8c5a;
+  animation: ts-blink 0.7s ease-in-out infinite;
+}
+@keyframes ts-blink {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.tspot-pop {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-brush);
+  font-size: 50px;
+  color: #4a8c5a;
+  text-shadow: 0 2px 8px rgba(245, 235, 210, 0.9);
+  animation: ts-pop 1.2s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes ts-pop {
+  0% { opacity: 0; transform: translate(-50%, 10px); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -90px); }
+}

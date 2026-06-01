@@ -25,6 +25,7 @@ export type SceneId =
   | 'dyeWait'
   | 'mapCloudy'
   | 'mapRainy'
+  | 'showcase3d'
 
 export interface Nav {
   scene: SceneId

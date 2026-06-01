@@ -1,0 +1,21 @@
+.dry-weather {
+  font-family: var(--font-ui);
+  font-size: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  justify-self: center;
+  padding: 0 30px;
+}
+.dry-sunny {
+  color: #4a7c34;
+  text-shadow: 0 2px 6px rgba(245, 235, 210, 0.85);
+}
+.dry-cloudy {
+  color: #6d5c48;
+  text-shadow: 0 2px 6px rgba(245, 235, 210, 0.85);
+}
+.dry-rainy {
+  color: #c0392b;
+  text-shadow: 0 2px 6px rgba(245, 235, 210, 0.9);
+}

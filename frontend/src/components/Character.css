@@ -1,0 +1,48 @@
+.character {
+  pointer-events: none;
+  z-index: 20;
+  filter: drop-shadow(0 6px 8px rgba(40, 28, 12, 0.3));
+}
+
+.character-inner {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.09s ease;
+}
+
+/* limb pivots */
+.ch-leg,
+.ch-arm {
+  transform-box: fill-box;
+  transform-origin: 50% 6%;
+}
+.ch-bob {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+/* walk cycle — legs and arms swing in opposition */
+.character.is-walking .ch-leg-l,
+.character.is-walking .ch-arm-r {
+  animation: limb-a 0.46s ease-in-out infinite;
+}
+.character.is-walking .ch-leg-r,
+.character.is-walking .ch-arm-l {
+  animation: limb-b 0.46s ease-in-out infinite;
+}
+.character.is-walking .ch-bob {
+  animation: ch-bob 0.46s ease-in-out infinite;
+}
+
+@keyframes limb-a {
+  0%, 100% { transform: rotate(15deg); }
+  50% { transform: rotate(-15deg); }
+}
+@keyframes limb-b {
+  0%, 100% { transform: rotate(-15deg); }
+  50% { transform: rotate(15deg); }
+}
+@keyframes ch-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}

@@ -1,0 +1,90 @@
+.show3d-root {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(120% 90% at 50% 38%, #1a0f08 0%, #0b0806 58%, #050302 100%);
+  overflow: hidden;
+  font-family: var(--font-ui);
+}
+.show3d-canvas {
+  position: absolute;
+  inset: 0;
+}
+/* Force the R3F <canvas> to fill its (correctly-sized) container. Both the
+   container and the measured size are 16:9, so no distortion — this just
+   defeats the stale 300×150 default if a re-measure is ever missed. */
+.show3d-root canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.show3d-title {
+  position: absolute;
+  left: 200px;
+  top: 190px;
+  pointer-events: none;
+  text-shadow: 0 4px 36px rgba(0, 0, 0, 0.75);
+}
+.show3d-title-cn {
+  font-family: var(--font-brush, var(--font-title));
+  font-size: 168px;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  color: #f6ecd6;
+}
+.show3d-title-sub {
+  margin-top: 22px;
+  font-size: 33px;
+  letter-spacing: 0.3em;
+  color: #c89a6a;
+}
+
+.show3d-knowledge {
+  position: absolute;
+  left: 200px;
+  bottom: 170px;
+  width: 1040px;
+  padding: 38px 46px;
+  background: rgba(20, 12, 6, 0.46);
+  border: 1px solid rgba(200, 154, 106, 0.3);
+  border-left: 7px solid #c0392b;
+  border-radius: 4px;
+  backdrop-filter: blur(8px);
+  color: #ecdcc0;
+}
+.show3d-knowledge-k {
+  font-size: 31px;
+  letter-spacing: 0.32em;
+  color: #d9a066;
+  margin-bottom: 18px;
+}
+.show3d-knowledge p {
+  margin: 0;
+  font-size: 39px;
+  line-height: 1.7;
+}
+.show3d-knowledge b {
+  color: #f0c089;
+  font-weight: 600;
+}
+
+.show3d-back {
+  position: absolute;
+  left: 80px;
+  top: 66px;
+  font-size: 40px;
+  color: #d8c3a0;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(216, 195, 160, 0.32);
+  border-radius: 999px;
+  padding: 14px 42px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  transition: background 0.2s, color 0.2s;
+}
+.show3d-back:hover {
+  background: rgba(0, 0, 0, 0.52);
+  color: #f3e7cf;
+}
