@@ -24,6 +24,7 @@
 }
 
 .dye-strip-slot {
+  position: relative;
   flex: 1;
   background: #efe8db;
   border-radius: 16px;
@@ -37,9 +38,27 @@
   transform: translateY(-6px);
 }
 .dye-strip-slot img {
-  width: 78%;
-  height: 78%;
+  width: 74%;
+  height: 64%;
   object-fit: contain;
+}
+.dye-strip-name {
+  position: absolute;
+  bottom: 26px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-brush);
+  font-size: 42px;
+  color: #543f27;
+}
+.dye-strip-tip {
+  font-family: var(--font-brush);
+  font-size: 50px;
+  color: #6d5c48;
+  display: grid;
+  place-items: center;
+  text-shadow: 0 2px 6px rgba(245, 235, 210, 0.85);
 }
 
 /* 等待时间 — dyeing overlay + countdown */
@@ -56,3 +75,85 @@
   place-items: center;
   z-index: 1;
 }
+
+/* 浸染 (反复浸入莨缸) — interactive dyeing over the dark vat overlay */
+.dye-dip-title {
+  font-family: var(--font-title);
+  font-weight: 900;
+  font-size: 120px;
+  letter-spacing: 18px;
+  color: #f0e2c4;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+}
+.dye-dip-pattern {
+  font-family: var(--font-brush);
+  font-size: 54px;
+  color: #d9a066;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+}
+.dye-dip-count {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 20px;
+  z-index: 1;
+}
+.dye-dip-num {
+  font-family: var(--font-title);
+  font-weight: 900;
+  font-size: 240px;
+  line-height: 1;
+  color: #f3c98a;
+  text-shadow: 0 6px 30px rgba(0, 0, 0, 0.55);
+}
+.dye-dip-unit {
+  font-family: var(--font-brush);
+  font-size: 84px;
+  color: #c89a6a;
+}
+.dye-dip-hint {
+  font-family: var(--font-ui);
+  font-size: 50px;
+  color: #ecdcc0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  line-height: 1.4;
+  z-index: 1;
+}
+.dye-dip-btn {
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-brush);
+  font-size: 66px;
+  color: #fbeede;
+  background: linear-gradient(180deg, #8a3f24, #5e2916);
+  border-radius: 24px;
+  box-shadow: inset 0 0 0 5px rgba(240, 200, 140, 0.35), 0 10px 26px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+  transition: filter 0.12s ease, transform 0.08s ease;
+}
+.dye-dip-btn:hover { filter: brightness(1.12); }
+.dye-dip-btn:active { transform: translateY(4px); }
+.dye-dip-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.dye-dip-done {
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-brush);
+  font-size: 60px;
+  color: #ebe5d7;
+  background: #543f27;
+  border-radius: 22px;
+  box-shadow: inset 0 0 0 5px rgba(235, 229, 215, 0.5), 0 8px 18px rgba(40, 28, 12, 0.4);
+  z-index: 1;
+  transition: filter 0.12s ease, transform 0.08s ease;
+}
+.dye-dip-done:hover { filter: brightness(1.12); }
+.dye-dip-done:active { transform: translateY(3px); }
+.dye-dip-done:disabled { opacity: 0.4; cursor: not-allowed; }
