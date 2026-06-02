@@ -1,48 +1,44 @@
 .character {
   pointer-events: none;
   z-index: 20;
-  filter: drop-shadow(0 6px 8px rgba(40, 28, 12, 0.3));
 }
 
-.character-inner {
+.character-shadow {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 64%;
+  height: 16px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(30, 20, 10, 0.34), transparent 70%);
+  border-radius: 50%;
+}
+
+.character-flip {
   width: 100%;
   height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
   transition: transform 0.09s ease;
 }
-
-/* limb pivots */
-.ch-leg,
-.ch-arm {
-  transform-box: fill-box;
-  transform-origin: 50% 6%;
+.character-bob {
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
 }
-.ch-bob {
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
+.character.is-walking .character-bob {
+  animation: char-bob 0.42s ease-in-out infinite;
 }
-
-/* walk cycle — legs and arms swing in opposition */
-.character.is-walking .ch-leg-l,
-.character.is-walking .ch-arm-r {
-  animation: limb-a 0.46s ease-in-out infinite;
-}
-.character.is-walking .ch-leg-r,
-.character.is-walking .ch-arm-l {
-  animation: limb-b 0.46s ease-in-out infinite;
-}
-.character.is-walking .ch-bob {
-  animation: ch-bob 0.46s ease-in-out infinite;
-}
-
-@keyframes limb-a {
-  0%, 100% { transform: rotate(15deg); }
-  50% { transform: rotate(-15deg); }
-}
-@keyframes limb-b {
-  0%, 100% { transform: rotate(-15deg); }
-  50% { transform: rotate(15deg); }
-}
-@keyframes ch-bob {
+@keyframes char-bob {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+  50% { transform: translateY(-7px); }
+}
+
+.character-sprite {
+  height: 100%;
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 3px 4px rgba(40, 28, 12, 0.3));
+  user-select: none;
 }

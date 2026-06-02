@@ -46,3 +46,6 @@ htmlcov/
 # Logs
 *.log
 logs/
+
+# Scratch / temp assets (calibration screenshots, throwaway pngs, etc.)
+tmp_*

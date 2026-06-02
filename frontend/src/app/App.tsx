@@ -22,6 +22,7 @@ import { IntroScene } from '../scenes/IntroScene'
 import { SettingsScene } from '../scenes/SettingsScene'
 import { PlaceholderScene } from '../scenes/PlaceholderScene'
 import { Showcase3DScene } from '../scenes/Showcase3DScene'
+import { WorkshopScene } from '../scenes/WorkshopScene'
 
 const SCENES: Partial<Record<SceneId, ComponentType>> = {
   start: StartScene,
@@ -47,6 +48,7 @@ const SCENES: Partial<Record<SceneId, ComponentType>> = {
   intro: IntroScene,
   settings: SettingsScene,
   showcase3d: Showcase3DScene,
+  weaving: WorkshopScene, // 织布坊 → 第一人称 3D 工坊
 }
 
 export function App() {
@@ -64,26 +66,6 @@ export function App() {
         <Stage>
           <Scene />
         </Stage>
-        {import.meta.env.DEV && (
-          <button
-            onClick={() => setScene('showcase3d')}
-            style={{
-              position: 'fixed',
-              right: 14,
-              bottom: 14,
-              zIndex: 99999,
-              padding: '8px 16px',
-              background: 'rgba(20,12,6,0.82)',
-              color: '#f0c089',
-              border: '1px solid #c89a6a',
-              borderRadius: 8,
-              fontSize: 14,
-              cursor: 'pointer',
-            }}
-          >
-            ▶ 3D 展厅
-          </button>
-        )}
       </NavContext.Provider>
     </GameProvider>
   )

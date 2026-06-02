@@ -1,0 +1,75 @@
+.workshop-root {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: #1a1109;
+  overflow: hidden;
+  font-family: var(--font-ui);
+}
+.workshop-canvas {
+  position: absolute;
+  inset: 0;
+}
+/* force the R3F canvas to fill the (correctly-sized) container inside the scaled Stage */
+.workshop-root canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.workshop-enter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  background: rgba(10, 7, 4, 0.48);
+  color: #f3e7cf;
+  pointer-events: none;
+}
+.workshop-enter-title {
+  font-family: var(--font-brush, var(--font-title));
+  font-size: 168px;
+  letter-spacing: 0.2em;
+  text-shadow: 0 6px 34px rgba(0, 0, 0, 0.75);
+}
+.workshop-enter-sub {
+  font-size: 38px;
+  letter-spacing: 0.12em;
+  color: #d8c3a0;
+}
+
+.workshop-hud {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 72px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 90px;
+  pointer-events: none;
+}
+.workshop-back,
+.workshop-finish {
+  pointer-events: auto;
+  font-family: var(--font-ui);
+  font-size: 40px;
+  color: #f0c089;
+  background: rgba(20, 12, 6, 0.7);
+  border: 1px solid #c89a6a;
+  border-radius: 999px;
+  padding: 16px 46px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.workshop-finish {
+  color: #ffe0b0;
+  border-color: #e0b070;
+}
+.workshop-back:hover,
+.workshop-finish:hover {
+  background: rgba(20, 12, 6, 0.92);
+}
