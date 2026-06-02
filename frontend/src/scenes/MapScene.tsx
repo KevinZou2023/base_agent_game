@@ -13,10 +13,14 @@ import { useGame } from '../app/GameState'
 import { STAGE_W, STAGE_H } from '../theme/tokens'
 import './MapScene.css'
 
-// ── tunables (tweak after play-testing) ──
+// ── movement tunables — speeds are px/SECOND (frame-rate independent) ──
 const ZOOM = 2.0
-const SPEED = 5
-const EASE = 0.12
+const MAX_SPEED = 270 // top walking speed (logical px/s); lower = calmer
+const ACCEL = 2600 // ramp-up (px/s²); lower = floatier start
+const DECEL = 3400 // ramp-down (px/s²); higher = snappier stop
+const STEP_LEN = 80 // logical px per step-bounce — tunes walk cadence
+const BOB_AMP = 8 // peak step-bounce height (px)
+const CAM_RATE = 9 // camera follow stiffness (1/s); higher = tighter
 const INTERACT_R = 400
 
 const MAP = { x: 64, y: 64, w: STAGE_W - 128, h: STAGE_H - 128 }
@@ -167,6 +171,7 @@ export function MapScene() {
   const [cam, setCam] = useState(START)
   const [facing, setFacing] = useState<'left' | 'right'>('right')
   const [moving, setMoving] = useState(false)
+  const [bob, setBob] = useState(0)
   const [near, setNear] = useState<Near>(null)
   const [debug, setDebug] = useState(false)
   const [questStep, setQuestStep] = useState<number>(() => loadQuestStep())
@@ -182,6 +187,9 @@ export function MapScene() {
   const talkingRef = useRef<Npc | null>(null)
   const talkLineRef = useRef(0)
   const advanceRef = useRef<() => void>(() => {})
+  const velRef = useRef({ x: 0, y: 0 })
+  const distRef = useRef(0)
+  const lastTsRef = useRef(0)
   goRef.current = go
   questStepRef.current = questStep
   talkingRef.current = talking
@@ -251,39 +259,83 @@ export function MapScene() {
     }
   }, [])
 
-  // movement + camera game loop
+  // movement + camera game loop — dt-based, accel/decel, distance-locked step bob
   useEffect(() => {
     const halfW = STAGE_W / 2 / ZOOM
     const halfH = STAGE_H / 2 / ZOOM
+    const approach = (v: number, target: number, maxDelta: number) => {
+      const d = target - v
+      if (d > maxDelta) return v + maxDelta
+      if (d < -maxDelta) return v - maxDelta
+      return target
+    }
+    lastTsRef.current = 0
+    velRef.current = { x: 0, y: 0 }
+    distRef.current = 0
     let raf = 0
-    const step = () => {
+    const step = (ts: number) => {
+      const last = lastTsRef.current
+      let dt = last ? (ts - last) / 1000 : 0
+      lastTsRef.current = ts
+      if (dt > 0.05) dt = 0.05 // clamp tab-switch / dialogue gaps so we never teleport
+
+      // paused during NPC dialogue: bleed off velocity, keep the loop alive
       if (talkingRef.current) {
+        velRef.current = { x: 0, y: 0 }
+        setMoving(false)
         raf = requestAnimationFrame(step)
         return
       }
-      const k = keys.current
-      let vx = 0
-      let vy = 0
-      if (k.has('w') || k.has('arrowup')) vy -= 1
-      if (k.has('s') || k.has('arrowdown')) vy += 1
-      if (k.has('a') || k.has('arrowleft')) vx -= 1
-      if (k.has('d') || k.has('arrowright')) vx += 1
 
+      const k = keys.current
+      let ix = 0
+      let iy = 0
+      if (k.has('w') || k.has('arrowup')) iy -= 1
+      if (k.has('s') || k.has('arrowdown')) iy += 1
+      if (k.has('a') || k.has('arrowleft')) ix -= 1
+      if (k.has('d') || k.has('arrowright')) ix += 1
+      const hasInput = ix !== 0 || iy !== 0
+
+      // target velocity, normalized so diagonals aren't faster
+      let tvx = 0
+      let tvy = 0
+      if (hasInput) {
+        const len = Math.hypot(ix, iy)
+        tvx = (ix / len) * MAX_SPEED
+        tvy = (iy / len) * MAX_SPEED
+      }
+      const maxDelta = (hasInput ? ACCEL : DECEL) * dt
+      const vel = velRef.current
+      vel.x = approach(vel.x, tvx, maxDelta)
+      vel.y = approach(vel.y, tvy, maxDelta)
+
+      const speed = Math.hypot(vel.x, vel.y)
       let p = posRef.current
-      const isMoving = vx !== 0 || vy !== 0
-      if (isMoving) {
-        const len = Math.hypot(vx, vy) || 1
-        const nx = p.x + (vx / len) * SPEED
-        const ny = p.y + (vy / len) * SPEED
+      if (speed > 0) {
+        const nx = p.x + vel.x * dt
+        const ny = p.y + vel.y * dt
         if (walkable(nx, ny)) p = { x: nx, y: ny }
-        else if (walkable(nx, p.y)) p = { x: nx, y: p.y }
-        else if (walkable(p.x, ny)) p = { x: p.x, y: ny }
+        else if (walkable(nx, p.y)) { p = { x: nx, y: p.y }; vel.y = 0 } // slide along walls
+        else if (walkable(p.x, ny)) { p = { x: p.x, y: ny }; vel.x = 0 }
+        else { vel.x = 0; vel.y = 0 }
         posRef.current = p
         setPos(p)
-        if (vx < 0) setFacing('left')
-        else if (vx > 0) setFacing('right')
+        if (vel.x < -6) setFacing('left')
+        else if (vel.x > 6) setFacing('right')
       }
-      setMoving(isMoving)
+      const moving = speed > 8
+      setMoving(moving)
+
+      // step bounce locked to distance travelled → cadence tracks ground speed
+      if (moving) {
+        distRef.current += speed * dt
+        const amp = BOB_AMP * Math.min(1, speed / MAX_SPEED)
+        const phase = (distRef.current / STEP_LEN) * Math.PI * 2
+        setBob(((1 - Math.cos(phase)) / 2) * amp)
+      } else {
+        distRef.current = 0
+        setBob((b) => (b > 0.1 ? b * 0.5 : 0))
+      }
 
       let best: Near = null
       let bestD = INTERACT_R
@@ -311,10 +363,12 @@ export function MapScene() {
         setNear(best)
       }
 
+      // camera: dt-based exponential follow (frame-rate independent)
       const c = camRef.current
       const tx = clamp(p.x, MAP.x + halfW, MAP.x + MAP.w - halfW)
       const ty = clamp(p.y, MAP.y + halfH, MAP.y + MAP.h - halfH)
-      const nc = { x: c.x + (tx - c.x) * EASE, y: c.y + (ty - c.y) * EASE }
+      const a = 1 - Math.exp(-CAM_RATE * dt)
+      const nc = { x: c.x + (tx - c.x) * a, y: c.y + (ty - c.y) * a }
       camRef.current = nc
       setCam(nc)
 
@@ -366,7 +420,7 @@ export function MapScene() {
             </div>
           ))}
 
-          <Character x={pos.x} y={pos.y} walking={moving} facing={facing} sprite="/art/player_acai.png" />
+          <Character x={pos.x} y={pos.y} walking={moving} facing={facing} bobY={bob} sprite="/art/player_acai.png" />
         </div>
 
         {w.overlay && <Abs x={0} y={0} w={STAGE_W} h={STAGE_H} className={`weather-overlay weather-${w.overlay}`} />}
