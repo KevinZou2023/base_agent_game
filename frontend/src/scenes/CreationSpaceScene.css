@@ -55,3 +55,17 @@
   place-items: center;
   cursor: pointer;
 }
+.cs-arrow.is-disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+
+.cs-mock {
+  font-size: 38px;
+  font-weight: 400;
+  color: #b07a4a;
+  margin-left: 16px;
+  padding: 2px 18px;
+  border: 1px solid rgba(176, 122, 74, 0.5);
+  border-radius: 999px;
+}

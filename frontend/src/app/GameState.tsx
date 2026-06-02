@@ -2,8 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import { generateArtwork, getScoring } from '../api/client'
 import {
   DEFAULT_PARAMETERS,
+  scoreTotal,
   type ArtworkGenerateResponse,
-  type ArtworkSummary,
   type LearningEvent,
   type PlayerState,
   type ScoringReport,
@@ -11,6 +11,28 @@ import {
 } from '../api/types'
 
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+
+const WORKS_KEY = 'liangzuo.works'
+
+/** A finished 香云纱 the player generated — drives 成品库 / 仓库. */
+export interface StudioWork {
+  artwork_id: string
+  image_url: string
+  pattern: string
+  score: number
+  created_at: string
+  mocked: boolean
+}
+
+function loadWorks(): StudioWork[] {
+  try {
+    const raw = localStorage.getItem(WORKS_KEY)
+    const parsed = raw ? (JSON.parse(raw) as StudioWork[]) : []
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
 
 const PID_KEY = 'liangzuo.player_id'
 const PS_KEY = 'liangzuo.player_state'
@@ -53,9 +75,8 @@ interface GameContextValue {
   setParams: (patch: Partial<XiangyunshaParameters>) => void
   patchPlayer: (patch: Partial<PlayerState>) => void
   addHistory: (ev: LearningEvent) => void
-  artworks: ArtworkSummary[]
-  setArtworks: (a: ArtworkSummary[]) => void
-  addArtwork: (a: ArtworkSummary) => void
+  works: StudioWork[]
+  addWork: (w: StudioWork) => void
   weather: Weather
   setWeather: (w: Weather) => void
   // AI 成衣闭环：通义万相生图 + 五维评分
@@ -77,7 +98,7 @@ export function useGame(): GameContextValue {
 
 export function GameProvider({ children }: { children: ReactNode }) {
   const [player, setPlayer] = useState<PlayerState>(() => loadPlayerState(loadPlayerId()))
-  const [artworks, setArtworks] = useState<ArtworkSummary[]>([])
+  const [works, setWorks] = useState<StudioWork[]>(loadWorks)
   const [weather, setWeather] = useState<Weather>('sunny')
   const [generating, setGenerating] = useState(false)
   const [genMocked, setGenMocked] = useState(false)
@@ -93,6 +114,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(PS_KEY, JSON.stringify(player))
   }, [player])
 
+  useEffect(() => {
+    localStorage.setItem(WORKS_KEY, JSON.stringify(works))
+  }, [works])
+
   const setParams = useCallback((patch: Partial<XiangyunshaParameters>) => {
     setPlayer((p) => ({ ...p, parameters: { ...p.parameters, ...patch } }))
   }, [])
@@ -105,8 +130,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setPlayer((p) => ({ ...p, history: [...p.history, ev] }))
   }, [])
 
-  const addArtwork = useCallback((a: ArtworkSummary) => {
-    setArtworks((list) => [a, ...list])
+  const addWork = useCallback((w: StudioWork) => {
+    setWorks((list) => [w, ...list].slice(0, 60))
   }, [])
 
   // 完成制作 → 通义万相按玩家参数生图 → 五维评分。client 失败时会回退 mock，
@@ -129,27 +154,28 @@ export function GameProvider({ children }: { children: ReactNode }) {
       ])
       setGenMocked(mocked)
       setCurrentArtwork(art)
-      addArtwork({
-        artwork_id: art.artwork_id,
-        task_theme: p.task_theme ?? null,
-        image_url: art.image_url,
-        status: art.status,
-        created_at: art.created_at,
-      })
       const { data: score } = await getScoring(art.artwork_id)
       setCurrentScoring(score)
+      addWork({
+        artwork_id: art.artwork_id,
+        image_url: art.image_url,
+        pattern: p.target_pattern ?? '云纹',
+        score: Math.round(scoreTotal(score.scores)),
+        created_at: art.created_at,
+        mocked,
+      })
     } catch (e) {
       setGenError(e instanceof Error ? e.message : '成衣失败，请回工坊重试')
     } finally {
       setGenerating(false)
     }
-  }, [addArtwork])
+  }, [addWork])
 
   return (
     <GameContext.Provider
       value={{
         player, setParams, patchPlayer, addHistory,
-        artworks, setArtworks, addArtwork,
+        works, addWork,
         weather, setWeather,
         generating, genMocked, genError, currentArtwork, currentScoring, finishCraft,
       }}
