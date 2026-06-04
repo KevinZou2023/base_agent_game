@@ -13,6 +13,7 @@ export type SceneId =
   | 'village'
   | 'river'
   | 'master'
+  | 'masterChat'
   | 'weaving'
   | 'dye'
   | 'drying'

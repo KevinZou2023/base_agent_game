@@ -1,6 +1,7 @@
 import { SceneRoot } from '../components/SceneRoot'
 import { Abs } from '../components/Abs'
 import { BackButton } from '../components/BackButton'
+import { NavTabs } from '../components/NavTabs'
 import { useNav } from '../app/nav'
 import './InfoScene.css'
 
@@ -35,6 +36,7 @@ export function SettingsScene() {
           <span className="settings-about-text">莨作 · 香云纱 v0.1 — 非遗教学 demo</span>
         </div>
       </Abs>
+      <NavTabs />
       <BackButton onClick={() => go('map')} />
     </SceneRoot>
   )

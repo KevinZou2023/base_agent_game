@@ -58,6 +58,18 @@ export function DryingScene() {
       <Abs x={774} y={278} w={1600} h={66} className="st-sub">铺布暴晒，火候要「恰好」——欠则色浅，过则绸脆</Abs>
       <Abs x={1074} y={372} w={1000} h={70} className={`dry-weather ${note.cls}`}>{note.text}</Abs>
 
+      {/* 晒制阶段递进（Figma 晾晒场-1/2/3）— 随收布进度点亮 */}
+      <Abs x={1024} y={452} w={1100} h={84} className="dry-stages">
+        {['一晒·铺布', '二晒·暴晒', '三晒·收莨'].map((label, i) => (
+          <span
+            key={label}
+            className={`dry-stage${dried.length > i ? ' is-done' : ''}${dried.length === i && !done ? ' is-current' : ''}`}
+          >
+            {label}
+          </span>
+        ))}
+      </Abs>
+
       {SPOTS.map((s, i) => (
         <TimingSpot
           key={i}
@@ -90,6 +102,21 @@ export function DryingScene() {
           <div className="st-result-master">师父：{masterLine}</div>
           <button className="st-result-btn" onClick={confirm}>收布 · 回坊</button>
         </Abs>
+      )}
+
+      {/* 晾晒警告（Figma 晾晒场—警告 115:9995）— 雨天不能晒布 */}
+      {!canDry && (
+        <>
+          <Abs x={0} y={0} w={3148} h={1773} className="dry-warn-veil" />
+          <Abs x={724} y={548} w={1700} h={700} className="dry-warn">
+            <span className="dry-warn-title">⚠ 晾晒警告</span>
+            <span className="dry-warn-text">今日有雨——阴天雨天更是不能晒布。</span>
+            <span className="dry-warn-note">（过低的草也不能晾晒香云纱，会过热影响效果）</span>
+            <button className="dry-warn-btn" onClick={() => go('map')}>
+              回地图 · 等天晴 ›
+            </button>
+          </Abs>
+        </>
       )}
 
       <SceneChrome back="map" />

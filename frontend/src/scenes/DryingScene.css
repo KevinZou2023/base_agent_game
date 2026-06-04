@@ -19,3 +19,82 @@
   color: #c0392b;
   text-shadow: 0 2px 6px rgba(245, 235, 210, 0.9);
 }
+
+/* ── 晒制阶段递进 ── */
+.dry-stages {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+  justify-self: center;
+}
+.dry-stage {
+  flex: 1;
+  font-family: var(--font-ui);
+  font-size: 40px;
+  color: #9a8a6e;
+  text-align: center;
+  padding: 12px 0;
+  background: rgba(239, 232, 218, 0.6);
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 3px #cfc4ac;
+}
+.dry-stage.is-current {
+  color: #6d5c48;
+  box-shadow: inset 0 0 0 4px #b39b73;
+}
+.dry-stage.is-done {
+  color: #efe8db;
+  background: #7a5a36;
+  box-shadow: none;
+}
+
+/* ── 晾晒警告 ── */
+.dry-warn-veil {
+  z-index: 50;
+  background: rgba(40, 20, 12, 0.5);
+}
+.dry-warn {
+  z-index: 51;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 30px;
+  padding: 70px 90px;
+  box-sizing: border-box;
+  background: #f3e6d8;
+  border: 10px solid #c0392b;
+  border-radius: 32px;
+  box-shadow: 0 24px 60px rgba(40, 12, 4, 0.5);
+}
+.dry-warn-title {
+  font-family: var(--font-brush, var(--font-ui));
+  font-size: 92px;
+  color: #c0392b;
+}
+.dry-warn-text {
+  font-family: var(--font-ui);
+  font-size: 60px;
+  color: #543f27;
+}
+.dry-warn-note {
+  font-family: var(--font-ui);
+  font-size: 44px;
+  color: #9a8a6e;
+}
+.dry-warn-btn {
+  margin-top: 10px;
+  padding: 30px 60px;
+  font-family: var(--font-brush, var(--font-ui));
+  font-size: 58px;
+  color: #f3e6d8;
+  background: #c0392b;
+  border: none;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: filter 0.12s;
+}
+.dry-warn-btn:hover {
+  filter: brightness(1.08);
+}

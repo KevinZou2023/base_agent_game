@@ -22,7 +22,7 @@ export function NavTabs() {
   return (
     <>
       {TABS.map((t) => (
-        <Abs key={t.id} x={t.x} y={18} w={165} h={325}>
+        <Abs key={t.id} x={t.x} y={18} w={165} h={325} style={{ zIndex: 60 }}>
           <button
             type="button"
             className={`nav-tab${scene === t.id ? ' is-active' : ''}`}

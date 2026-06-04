@@ -21,3 +21,82 @@
   font-size: 60px;
   margin-bottom: 12px;
 }
+
+/* ── 5 标签切换栏 ── */
+.baike-tabbar {
+  display: flex;
+  gap: 28px;
+  align-items: stretch;
+}
+.baike-tab {
+  flex: 1;
+  font-family: var(--font-title, var(--font-ui));
+  font-size: 56px;
+  letter-spacing: 6px;
+  color: #6b5640;
+  background: rgba(216, 200, 168, 0.55);
+  border: 3px solid #b39b73;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  box-shadow: 0 4px 10px rgba(40, 28, 12, 0.15);
+}
+.baike-tab:hover {
+  background: rgba(216, 200, 168, 0.9);
+}
+.baike-tab.is-active {
+  color: #f4ecd8;
+  background: #7a5a36;
+  border-color: #5a4026;
+  box-shadow: 0 7px 16px rgba(40, 28, 12, 0.35);
+  transform: translateY(-4px);
+}
+
+/* ── 无图词条的占位图块 ── */
+.baike-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-title, var(--font-ui));
+  font-size: 220px;
+  color: #b08a5a;
+  background: linear-gradient(135deg, #e7dcc2, #d6c4a0);
+  border-radius: 24px;
+  box-shadow: 0 6px 16px rgba(40, 28, 12, 0.3);
+}
+
+/* ── 长文式标签（历史 / 冷知识）── */
+.baike-prose {
+  display: block;
+  overflow-y: auto;
+  padding: 56px 78px;
+  background: rgba(247, 240, 222, 0.62);
+  border: 3px solid #c4b48f;
+  border-radius: 28px;
+  box-shadow: inset 0 0 40px rgba(150, 120, 80, 0.12);
+  font-family: var(--font-ui);
+  color: #543f27;
+}
+.baike-prose-entry {
+  margin-bottom: 44px;
+}
+.baike-prose-entry:last-child {
+  margin-bottom: 0;
+}
+.baike-prose-title {
+  margin: 0 0 14px;
+  font-size: 62px;
+  font-weight: 700;
+  color: #6b3f1e;
+}
+.baike-prose-title::before {
+  content: '· ';
+  color: #b08a5a;
+}
+.baike-prose-body {
+  margin: 0;
+  font-size: 50px;
+  line-height: 1.62;
+}

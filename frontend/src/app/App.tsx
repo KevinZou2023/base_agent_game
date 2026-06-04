@@ -33,7 +33,8 @@ const SCENES: Partial<Record<SceneId, ComponentType>> = {
   warehouse: WarehouseScene,
   space: CreationSpaceScene,
   personal: CreationSpaceScene,
-  master: MasterDialogueScene,
+  master: VillagerHomeScene, // 师父的家 = 家场景（立绘+菜单+百科书）
+  masterChat: MasterDialogueScene, // 师父对话 = 聊天页
   village: VillageScene,
   river: RiverScene,
   dye: DyeScene,

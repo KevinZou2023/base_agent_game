@@ -75,3 +75,121 @@
   align-items: center;
   justify-content: center;
 }
+
+/* ── 可点击物品格（媒体 + 名称 + 数量/日期） ── */
+.wh-item {
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.12s;
+}
+.wh-item:hover {
+  transform: translateY(-8px);
+}
+.wh-item-media {
+  width: 493px;
+  height: 461px;
+  padding: 27px 30px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+}
+.wh-item .wh-label,
+.wh-item .wh-date {
+  width: 100%;
+}
+.wh-item .wh-label {
+  height: 70px;
+}
+
+/* 无图道具/原料的占位块 */
+.wh-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-brush, var(--font-ui));
+  font-size: 180px;
+  color: #efe8db;
+  background: linear-gradient(135deg, #9a8a6e, #837664);
+  border-radius: 8px;
+}
+
+/* ── 查看详细信息（下钻页）── */
+.wh-veil {
+  z-index: 50;
+  background: rgba(40, 28, 12, 0.55);
+}
+.wh-detail {
+  z-index: 51;
+  display: flex;
+  gap: 70px;
+  padding: 70px 80px;
+  box-sizing: border-box;
+  background: #efe8db;
+  border: 10px solid #543f27;
+  border-radius: 28px;
+  box-shadow: 0 24px 60px rgba(20, 12, 4, 0.5);
+}
+.wh-detail-close {
+  position: absolute;
+  top: 28px;
+  right: 40px;
+  width: 90px;
+  height: 90px;
+  font-size: 80px;
+  line-height: 1;
+  color: #837664;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.wh-detail-media {
+  flex: 0 0 760px;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: #ded4c0;
+  border-radius: 18px;
+  overflow: hidden;
+}
+.wh-detail-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.wh-detail-media .wh-tile {
+  border-radius: 18px;
+  font-size: 360px;
+}
+.wh-detail-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  color: #543f27;
+  font-family: var(--font-ui);
+}
+.wh-detail-name {
+  font-family: var(--font-brush, var(--font-ui));
+  font-size: 96px;
+  color: #4a3a22;
+}
+.wh-detail-sub {
+  font-size: 52px;
+  color: #9a8a6e;
+  margin: 8px 0 36px;
+}
+.wh-detail-desc {
+  font-size: 56px;
+  line-height: 1.6;
+}
+.wh-detail-kw {
+  margin-top: auto;
+  font-size: 48px;
+  color: #837664;
+  border-top: 3px dashed #c4b48f;
+  padding-top: 28px;
+}

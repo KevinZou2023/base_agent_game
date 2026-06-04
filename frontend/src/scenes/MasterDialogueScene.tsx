@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { SceneRoot } from '../components/SceneRoot'
 import { Abs } from '../components/Abs'
-import { TopStatusBar } from '../components/TopStatusBar'
 import { NavTabs } from '../components/NavTabs'
 import { BackButton } from '../components/BackButton'
 import { TaskScroll } from '../components/TaskScroll'
@@ -44,8 +43,8 @@ export function MasterDialogueScene() {
 
   return (
     <SceneRoot bg="/art/master-bg.png">
-      <Abs x={628} y={63} w={798} h={2197}>
-        <img className="md-portrait" src="/art/master-portrait.png" alt="师父" />
+      <Abs x={628} y={188} w={798} h={1548}>
+        <img className="md-portrait" src="/art/villager-master.png" alt="师父" />
       </Abs>
 
       <Abs x={1793} y={372} w={220} h={114} className="md-nametag">师父</Abs>
@@ -76,9 +75,8 @@ export function MasterDialogueScene() {
       ))}
 
       <TaskScroll x={46} y={92} />
-      <TopStatusBar />
       <NavTabs />
-      <BackButton onClick={() => go('map')} />
+      <BackButton onClick={() => go('master')} />
     </SceneRoot>
   )
 }

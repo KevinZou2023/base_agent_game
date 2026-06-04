@@ -9,16 +9,18 @@ export function SceneChrome({
   back = 'map',
   tabs = true,
   task = true,
+  status = true,
 }: {
   back?: SceneId
   tabs?: boolean
   task?: boolean
+  status?: boolean
 }) {
   const { go } = useNav()
   return (
     <>
       {task && <TaskScroll x={48} y={81} />}
-      <TopStatusBar />
+      {status && <TopStatusBar />}
       {tabs && <NavTabs />}
       <BackButton onClick={() => go(back)} />
     </>

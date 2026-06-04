@@ -26,6 +26,29 @@ const INTERACT_R = 400
 const MAP = { x: 64, y: 64, w: STAGE_W - 128, h: STAGE_H - 128 }
 const START = { x: 1500, y: 1320 }
 
+// 记住玩家在地图上的位置：离开/返回（含进地点、切天气）后回到原地，而非每次重置到 START。
+const MAP_POS_KEY = 'liangzuo.map_pos'
+type Pos = { x: number; y: number }
+function loadMapPos(): Pos {
+  try {
+    const raw = localStorage.getItem(MAP_POS_KEY)
+    if (raw) {
+      const p = JSON.parse(raw) as Pos
+      if (Number.isFinite(p?.x) && Number.isFinite(p?.y)) return p
+    }
+  } catch {
+    /* ignore corrupt */
+  }
+  return START
+}
+const saveMapPos = (p: Pos) => {
+  try {
+    localStorage.setItem(MAP_POS_KEY, JSON.stringify(p))
+  } catch {
+    /* ignore */
+  }
+}
+
 const LOCATIONS: { label: string; x: number; y: number; to: SceneId }[] = [
   { label: '村庄', x: 463, y: 255, to: 'village' },
   { label: '乌尔河', x: 856, y: 350, to: 'river' },
@@ -167,8 +190,9 @@ export function MapScene() {
     setWeather(scene === 'mapRainy' ? 'rainy' : scene === 'mapCloudy' ? 'cloudy' : 'sunny')
   }, [scene, setWeather])
 
-  const [pos, setPos] = useState(START)
-  const [cam, setCam] = useState(START)
+  const [start] = useState(loadMapPos) // 进入时还原上次位置（懒加载一次）
+  const [pos, setPos] = useState(start)
+  const [cam, setCam] = useState(start)
   const [facing, setFacing] = useState<'left' | 'right'>('right')
   const [moving, setMoving] = useState(false)
   const [bob, setBob] = useState(0)
@@ -178,8 +202,8 @@ export function MapScene() {
   const [talking, setTalking] = useState<Npc | null>(null)
   const [talkLine, setTalkLine] = useState(0)
 
-  const posRef = useRef(START)
-  const camRef = useRef(START)
+  const posRef = useRef(start)
+  const camRef = useRef(start)
   const keys = useRef<Set<string>>(new Set())
   const nearRef = useRef<Near>(null)
   const goRef = useRef(go)
@@ -196,6 +220,9 @@ export function MapScene() {
   talkLineRef.current = talkLine
 
   useEffect(() => saveQuestStep(questStep), [questStep])
+
+  // 离开地图（进地点 / 切天气 / 卸载）时记住当前位置
+  useEffect(() => () => saveMapPos(posRef.current), [])
 
   // debug overlay (press P) — built once from the explicit walkable geometry
   const debugUrl = useMemo(() => buildDebugOverlay(), [])

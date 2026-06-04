@@ -69,3 +69,259 @@
   border: 1px solid rgba(176, 122, 74, 0.5);
   border-radius: 999px;
 }
+
+/* ── 成品/公共/个人 切换栏 ── */
+.cs-tabs {
+  display: flex;
+  gap: 24px;
+}
+.cs-tab {
+  flex: 1;
+  font-family: var(--font-brush, var(--font-ui));
+  font-size: 64px;
+  color: #837664;
+  background: #efe8db;
+  border: none;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 5px #cfc4ac;
+  cursor: pointer;
+  transition: background 0.14s, color 0.14s, transform 0.1s;
+}
+.cs-tab.is-active {
+  color: #efe8db;
+  background: #837664;
+  box-shadow: inset 0 0 0 5px #6d5c48;
+  transform: translateY(-4px);
+}
+
+/* ── 公共空间社区卡片 ── */
+.cs-comm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.12s;
+}
+.cs-comm:hover {
+  transform: translateY(-8px);
+}
+.cs-comm-media {
+  width: 820px;
+  height: 700px;
+  padding: 22px;
+  box-sizing: border-box;
+  background: #cfc4ac;
+  border-radius: 24px;
+  box-shadow: 0 8px 20px rgba(40, 28, 12, 0.3);
+}
+.cs-comm-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+.cs-comm-name {
+  margin-top: 22px;
+  font-family: var(--font-brush, var(--font-ui));
+  font-size: 64px;
+  color: #543f27;
+}
+.cs-comm-meta {
+  font-family: var(--font-ui);
+  font-size: 44px;
+  color: #9a8a6e;
+}
+.cs-comm-foot {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  margin-top: 8px;
+}
+.cs-comm-score {
+  font-family: var(--font-ui);
+  font-size: 50px;
+  font-weight: 700;
+  color: #837664;
+}
+.cs-comm-buy {
+  font-family: var(--font-ui);
+  font-size: 46px;
+  color: #b07a4a;
+}
+
+/* ── 个人 DIY ── */
+.cs-diy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 40px;
+  padding: 80px;
+  box-sizing: border-box;
+  background: rgba(239, 232, 218, 0.7);
+  border-radius: 28px;
+  box-shadow: inset 0 0 0 5px #cfc4ac;
+}
+.cs-diy-title {
+  font-family: var(--font-brush, var(--font-ui));
+  font-size: 96px;
+  color: #543f27;
+}
+.cs-diy-hint {
+  font-family: var(--font-ui);
+  font-size: 50px;
+  color: #9a8a6e;
+}
+.cs-diy-input {
+  width: 1100px;
+  padding: 28px 40px;
+  font-family: var(--font-ui);
+  font-size: 56px;
+  color: #543f27;
+  background: #fff;
+  border: none;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 4px #cfc4ac;
+  text-align: center;
+}
+.cs-diy-btns {
+  display: flex;
+  gap: 48px;
+}
+.cs-diy-btn {
+  min-width: 320px;
+  padding: 28px 48px;
+  font-family: var(--font-brush, var(--font-ui));
+  font-size: 58px;
+  color: #efe8db;
+  background: #837664;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: filter 0.12s;
+}
+.cs-diy-btn.ghost {
+  color: #837664;
+  background: #efe8db;
+  box-shadow: inset 0 0 0 5px #837664;
+}
+.cs-diy-btn:hover {
+  filter: brightness(1.06);
+}
+.cs-diy-msg {
+  font-family: var(--font-ui);
+  font-size: 48px;
+  color: #4a7c34;
+}
+
+/* ── 公共详情 + 评价 + 订购弹层 ── */
+.cs-veil {
+  z-index: 50;
+  background: rgba(40, 28, 12, 0.55);
+}
+.cs-detail {
+  z-index: 51;
+  display: flex;
+  gap: 70px;
+  padding: 70px 80px;
+  box-sizing: border-box;
+  background: #f2e4c5;
+  border: 10px solid #543f27;
+  border-radius: 32px;
+  box-shadow: 0 24px 60px rgba(20, 12, 4, 0.5);
+}
+.cs-detail-close {
+  position: absolute;
+  top: 26px;
+  right: 40px;
+  width: 90px;
+  height: 90px;
+  font-size: 80px;
+  line-height: 1;
+  color: #837664;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.cs-detail-media {
+  flex: 0 0 820px;
+  height: 100%;
+  padding: 22px;
+  box-sizing: border-box;
+  background: #cfc4ac;
+  border-radius: 20px;
+}
+.cs-detail-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+.cs-detail-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  color: #543f27;
+  font-family: var(--font-ui);
+}
+.cs-detail-name {
+  font-family: var(--font-brush, var(--font-ui));
+  font-size: 88px;
+  color: #4a3a22;
+}
+.cs-detail-meta {
+  font-size: 46px;
+  color: #9a8a6e;
+  margin: 10px 0 30px;
+}
+.cs-detail-reviews-label {
+  font-size: 48px;
+  font-weight: 700;
+  color: #837664;
+  margin-bottom: 12px;
+}
+.cs-detail-review {
+  font-size: 42px;
+  line-height: 1.5;
+  color: #6d5c48;
+  margin-bottom: 14px;
+  padding-left: 28px;
+  border-left: 5px solid #cfc4ac;
+}
+.cs-order {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  border-top: 3px dashed #c4b48f;
+  padding-top: 28px;
+}
+.cs-order-vendor {
+  font-size: 44px;
+  color: #543f27;
+}
+.cs-order-price {
+  font-size: 40px;
+  color: #b07a4a;
+}
+.cs-order-btn {
+  margin-left: auto;
+  padding: 22px 60px;
+  font-family: var(--font-brush, var(--font-ui));
+  font-size: 56px;
+  color: #f2e4c5;
+  background: #b07a4a;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: filter 0.12s;
+}
+.cs-order-btn:hover {
+  filter: brightness(1.08);
+}
+.cs-order-done {
+  font-size: 46px;
+  color: #4a7c34;
+  line-height: 1.5;
+}
