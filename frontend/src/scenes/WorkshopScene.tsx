@@ -195,7 +195,7 @@ export function WorkshopScene() {
             go('showcase3d')
           }}
         >
-          完成制作 · 看成品 ›
+          查看最终成品 ›
         </button>
       </div>
     </div>

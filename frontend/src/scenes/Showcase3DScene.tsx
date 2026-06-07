@@ -1,221 +1,318 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Environment, Lightformer, OrbitControls, ContactShadows } from '@react-three/drei'
-import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing'
+import { Center, ContactShadows, OrbitControls, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
-import { SilkCloth } from '../three/SilkCloth'
-import { AIInsightOverlay } from '../components/AIInsightOverlay'
 import { useNav } from '../app/nav'
-import { useGame } from '../app/GameState'
-import { scoreTotal } from '../api/types'
 import './Showcase3DScene.css'
 
-/**
- * P0 hero slice — the 3D showcase.
- *
- * A single bolt of 香云纱 hangs in a dark, spotlit space, slowly turning on a
- * cinematic turntable. The silk wears a (placeholder) AI texture; an ink-wash
- * post stack (bloom + vignette + film grain) gives it the 水墨 mood. Beside it,
- * <AIInsightOverlay> replays a captured MasterAgent run as the technical hammer.
- */
-const DIMS = [
-  { key: 'process_score', label: '工艺' },
-  { key: 'pattern_score', label: '纹样' },
-  { key: 'color_score', label: '色彩' },
-  { key: 'culture_score', label: '文化' },
-  { key: 'progress_score', label: '进步' },
-] as const
+type Dimension = {
+  name: string
+  value: number
+  note: string
+}
 
-const LOADING_LINES = [
-  '薯莨汁反复浸染……',
-  '烈日之下，暴晒成色……',
-  '河泥过乌，氧化生黑……',
-  '清水漂洗，晾于竹竿……',
-  '通义万相 · 落笔成纹……',
+type MemoryStep = {
+  label: string
+  title: string
+  body: string
+}
+
+type SampleCase = {
+  id: 'one' | 'two'
+  name: string
+  modelUrl: string
+  dimensions: Dimension[]
+  mentor: string
+  warning: string
+  knowledge: string
+  memory: MemoryStep[]
+}
+
+const CASES: SampleCase[] = [
+  {
+    id: 'one',
+    name: '一号样品',
+    modelUrl: '/models/chenggong.glb',
+    dimensions: [
+      { name: '工艺', value: 94, note: '等待时间充分，黑亮面稳定形成' },
+      { name: '纹样', value: 92, note: '三朵祥云结构清楚，疏密自然' },
+      { name: '色彩', value: 91, note: '正面乌黑油润，背面红褐层次明确' },
+      { name: '文化', value: 95, note: '祥云寓意完整，贴合岭南非遗叙事' },
+      { name: '进步', value: 90, note: '工艺参数控制成熟，可练更细纹样' },
+    ],
+    mentor:
+      '一号样品火候稳，等待时间够，黑亮面有油润感，三朵祥云也立得住。下一步可以练更细的边线，让云脚更轻。',
+    warning: '优势项 · 过乌等待充分 · 黑亮面油润度达标',
+    knowledge:
+      '一号样品显示：等待时间充分时，河泥与薯莨单宁反应更完整，布面由红褐转为乌黑亮泽，祥云纹样边缘也更稳定。',
+    memory: [
+      {
+        label: '第一站',
+        title: '我先去了老师傅家',
+        body: '我问老师傅，香云纱为什么被叫作“软黄金”。师傅从薯莨、太阳和河泥慢慢说起。',
+      },
+      {
+        label: '采料',
+        title: '我去山里找薯莨',
+        body: '这一步让我知道，红褐底色不是颜料随便涂上去的，而是薯莨汁一遍遍吃进布里。',
+      },
+      {
+        label: '我问了',
+        title: '“浸染少几遍行不行？”',
+        body: '师傅说不急，香云纱靠的是层层叠色。旁边的小助手也提醒我：单宁吃得够，后面的过乌才有基础。',
+      },
+      {
+        label: '动手',
+        title: '我完成了浸染、晒莨和过乌',
+        body: '这一轮我等得比较稳，翻面观察也及时。布面慢慢从红褐转出黑亮感的时候，工艺终于有点“活”起来了。',
+      },
+      {
+        label: '被提醒',
+        title: '过乌前我检查了三个点',
+        body: '小助手提醒我看泥浆厚度、等待时间和翻面状态。这个提醒让我没有太早收布。',
+      },
+      {
+        label: '记住了',
+        title: '黑亮面不是直接染出来的',
+        body: '我记住了：红褐底色靠薯莨反复浸染，黑亮面靠河泥里的铁和布上的单宁慢慢反应。',
+      },
+    ],
+  },
+  {
+    id: 'two',
+    name: '二号样品',
+    modelUrl: '/models/shibai.glb',
+    dimensions: [
+      { name: '工艺', value: 72, note: '染色工序正常，问题集中在过乌等待' },
+      { name: '纹样', value: 84, note: '花束结构清楚，但浅色削弱了层次' },
+      { name: '色彩', value: 78, note: '染色没大问题，过乌不足让花色偏浅' },
+      { name: '文化', value: 80, note: '题材完整，但黑亮面还没形成非遗质感' },
+      { name: '进步', value: 78, note: '染色控制有进步，下次重点补足过乌时长' },
+    ],
+    mentor:
+      '这次香云纱前面的染色没有大问题，底色吃得住，说明染色工序是稳的。问题在过乌等待时间不够，泥和薯莨还没反应到位就收了，所以花的颜色显得偏浅，黑亮面也没完全起来。下次染色参数可以保留，重点把过乌时间等足。',
+    warning: '风险项 · 染色工序正常 · 过乌等待不足 · 花色偏浅',
+    knowledge:
+      '二号样品显示：香云纱染色阶段基本正常，问题主要发生在过乌等待环节。等待时间不足会让河泥与薯莨单宁反应停在中段，导致花的颜色偏浅，黑亮油润感没有完全生成。',
+    memory: [
+      {
+        label: '第一站',
+        title: '我从老师傅家进了工坊',
+        body: '这轮我想做出一束花的效果。师傅先让我记住：先把薯莨底色做好，再看过乌能不能把黑亮面带出来。',
+      },
+      {
+        label: '采料',
+        title: '我准备了薯莨和河泥',
+        body: '采料时我才发现，河泥不是装饰材料，它会影响最后那层乌黑油亮的质感。',
+      },
+      {
+        label: '我问了',
+        title: '“为什么要反复浸染？”',
+        body: '师傅说，薯莨汁要一层层吃进丝绸里。小助手在旁边补了一句：这是为了给后面的过乌留下反应基础。',
+      },
+      {
+        label: '动手',
+        title: '我完成了染色，但收布有点急',
+        body: '前面的染色其实还算顺，底色也吃住了。问题出在过乌时，我等得不够久就收了布。',
+      },
+      {
+        label: '被提醒',
+        title: '小助手没有把问题怪到染色上',
+        body: '它提醒我：这次不是染色坏了，而是过乌等待不够，所以花的颜色显得偏浅，黑亮面还没完全起来。',
+      },
+      {
+        label: '记住了',
+        title: '花色偏浅不一定是染色错了',
+        body: '我这次学到：染色可以是对的，但过乌等不够，最后的花色还是会浅。下次要保留染色方法，把等待时间补足。',
+      },
+    ],
+  },
 ]
+
+function totalScore(sample: SampleCase): number {
+  return Math.round(sample.dimensions.reduce((sum, item) => sum + item.value, 0) / sample.dimensions.length)
+}
+
+function SampleModel({ url }: { url: string }) {
+  const gltf = useGLTF(url) as { scene: THREE.Group }
+  const model = useMemo(() => gltf.scene.clone(true), [gltf.scene])
+
+  return (
+    <Center>
+      <primitive object={model} rotation={[0, 0, Math.PI]} scale={1.8} />
+    </Center>
+  )
+}
+
+useGLTF.preload('/models/chenggong.glb')
+useGLTF.preload('/models/shibai.glb')
 
 export function Showcase3DScene() {
   const { go } = useNav()
-  const { generating, genMocked, genError, currentArtwork, currentScoring } = useGame()
-  const [showResult, setShowResult] = useState(true)
-  const [flavor, setFlavor] = useState(0)
-  const lastScoredId = useRef<string | null>(null)
+  const [activeId, setActiveId] = useState<SampleCase['id']>('one')
+  const [showScore, setShowScore] = useState(false)
 
-  // Re-open the result card whenever a fresh scoring arrives.
-  useEffect(() => {
-    if (currentScoring && currentScoring.artwork_id !== lastScoredId.current) {
-      lastScoredId.current = currentScoring.artwork_id
-      setShowResult(true)
-    }
-  }, [currentScoring])
-
-  // Cycle craft-flavored status lines while 通义万相 is generating.
-  useEffect(() => {
-    if (!generating) return
-    const t = window.setInterval(() => setFlavor((f) => (f + 1) % LOADING_LINES.length), 1300)
-    return () => window.clearInterval(t)
-  }, [generating])
-
-  const textureUrl = currentArtwork?.image_url ?? '/art/cloth-brown.png'
-
-  // R3F's react-use-measure can latch onto a 0/stale size when this scene mounts
-  // into the transform-scaled <Stage>, leaving the canvas at its 300×150 default.
-  // Nudge a re-measure after first paint so it fills the stage at the right aspect.
-  useEffect(() => {
-    const fire = () => window.dispatchEvent(new Event('resize'))
-    const r = requestAnimationFrame(fire)
-    const t = window.setTimeout(fire, 120)
-    return () => {
-      cancelAnimationFrame(r)
-      window.clearTimeout(t)
-    }
-  }, [])
+  const active = CASES.find((sample) => sample.id === activeId) ?? CASES[0]
+  const score = totalScore(active)
 
   return (
-    <div className="show3d-root">
-      <Canvas
-        className="show3d-canvas"
-        shadows
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
-        camera={{ position: [0, 0.15, 7.2], fov: 40 }}
-      >
-        <color attach="background" args={['#0b0806']} />
-        <fog attach="fog" args={['#0b0806', 8, 18]} />
-
-        <ambientLight intensity={0.16} />
-        <spotLight
-          position={[5, 7, 6]}
-          angle={0.5}
-          penumbra={0.85}
-          intensity={220}
-          color="#fff1dc"
-          castShadow
-          shadow-mapSize={[1024, 1024]}
-        />
-        <spotLight position={[-6, 2, 4]} angle={0.6} penumbra={1} intensity={90} color="#b86a3a" />
-        <pointLight position={[0, -1, -5]} intensity={55} color="#7a4a2a" />
-
-        <Suspense fallback={null}>
-          <SilkCloth textureUrl={textureUrl} />
-          <ContactShadows position={[0, -2.55, 0]} opacity={0.5} scale={13} blur={2.6} far={4} color="#160a04" />
-          <Environment resolution={256} background={false}>
-            <Lightformer intensity={2.4} color="#f0c08a" position={[0, 3, -4]} scale={[9, 9, 1]} />
-            <Lightformer intensity={1} color="#6b4426" position={[-4, 0, 3]} scale={[5, 5, 1]} />
-            <Lightformer intensity={1.4} color="#ffe9c8" position={[4, 1, 2]} scale={[3, 6, 1]} />
-          </Environment>
-        </Suspense>
-
-        <OrbitControls
-          enablePan={false}
-          enableZoom={false}
-          autoRotate
-          autoRotateSpeed={0.5}
-          minPolarAngle={Math.PI * 0.36}
-          maxPolarAngle={Math.PI * 0.6}
-        />
-
-        <EffectComposer>
-          <Bloom intensity={0.55} luminanceThreshold={0.55} luminanceSmoothing={0.3} mipmapBlur />
-          <Vignette eskil={false} offset={0.28} darkness={0.82} />
-          <Noise opacity={0.035} premultiply />
-        </EffectComposer>
-      </Canvas>
-
-      <div className="show3d-title">
-        <div className="show3d-title-cn">香云纱</div>
-        <div className="show3d-title-sub">GAMBIERED CANTON GAUZE · 国家级非物质文化遗产</div>
-      </div>
-
-      <div className="show3d-knowledge">
-        <div className="show3d-knowledge-k">知 识 卡</div>
-        <p>
-          以薯莨汁反复浸染、河泥「过乌」氧化成色，<b>正面乌黑透亮、背面棕红</b>，
-          一匹需历经数十道工序、半年日晒，被称为「软黄金」。
-        </p>
-      </div>
-
-      <AIInsightOverlay />
-
-      <button className="show3d-back" onClick={() => go('map')}>
-        ‹ 返回
-      </button>
-
-      {generating && (
-        <div className="show3d-veil">
-          <div className="show3d-loading">
-            <div className="show3d-spinner" />
-            <div className="show3d-loading-title">师父正在为你成衣……</div>
-            <div className="show3d-loading-sub">{LOADING_LINES[flavor]}</div>
-            <div className="show3d-loading-tip">通义万相 正按你的工艺参数生成专属纹样</div>
-          </div>
+    <div className="sample-review-root">
+      <header className="sample-review-top">
+        <button className="sample-review-back" type="button" onClick={() => go('weaving')}>
+          ‹ 返回工坊
+        </button>
+        <div className="sample-review-brand">
+          <h1>香云纱</h1>
+          <p>GAMBIERED CANTON GAUZE · 非遗学习成品回顾</p>
         </div>
-      )}
+        <button className="sample-review-log-button" type="button" onClick={() => setShowScore(true)}>
+          五维评分
+        </button>
+      </header>
 
-      {!generating && genError && (
-        <div className="show3d-veil">
-          <div className="show3d-loading">
-            <div className="show3d-loading-title">成衣未成</div>
-            <div className="show3d-loading-sub">{genError}</div>
-            <button className="show3d-result-confirm" onClick={() => go('weaving')}>
-              回工坊重试 ›
+      <main className="sample-review-layout">
+        <aside className="sample-score-panel">
+          <div className="sample-panel-title">
+            <span>当前样品</span>
+            <strong>{active.name}</strong>
+          </div>
+
+          <div className="sample-total">
+            <span>{score}</span>
+            <small>总评</small>
+          </div>
+
+          <div className="sample-case-list" aria-label="样品选择">
+            {CASES.map((sample) => (
+              <button
+                className="sample-case-card"
+                type="button"
+                key={sample.id}
+                aria-pressed={sample.id === activeId}
+                onClick={() => setActiveId(sample.id)}
+              >
+                <span>{sample.id === 'one' ? '样品一号' : '样品二号'}</span>
+                <strong>{sample.name}</strong>
+                <small>{totalScore(sample)} 分</small>
+              </button>
+            ))}
+          </div>
+
+          <div className="sample-dimensions">
+            {active.dimensions.map((item) => (
+              <article className="sample-dimension" key={item.name}>
+                <div>
+                  <span>{item.name}</span>
+                  <strong>{item.value}</strong>
+                </div>
+                <i>
+                  <b style={{ width: `${item.value}%` }} />
+                </i>
+                <p>{item.note}</p>
+              </article>
+            ))}
+          </div>
+
+          <button className="sample-primary" type="button" onClick={() => setShowScore(true)}>
+            查看师父点评
+          </button>
+        </aside>
+
+        <section className="sample-model-stage" aria-label="3D 样品展示">
+          <Canvas
+            shadows
+            dpr={[1, 1.5]}
+            camera={{ position: [0, 0.8, 6.2], fov: 38 }}
+            gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
+          >
+            <color attach="background" args={['#efe7d2']} />
+            <fog attach="fog" args={['#efe7d2', 9, 24]} />
+            <ambientLight intensity={0.85} />
+            <hemisphereLight color="#fff4d8" groundColor="#8aa58a" intensity={1.6} />
+            <directionalLight position={[4, 5, 3]} intensity={3.1} color="#ffddb0" castShadow />
+            <directionalLight position={[-3, 2, -4]} intensity={1.25} color="#b6d6c2" />
+            <Suspense fallback={null}>
+              <SampleModel url={active.modelUrl} />
+              <ContactShadows position={[0, -1.75, 0]} opacity={0.22} scale={8} blur={2.6} far={4} color="#7d6d4e" />
+            </Suspense>
+            <OrbitControls enablePan={false} autoRotate autoRotateSpeed={0.65} minDistance={3.2} maxDistance={8} />
+          </Canvas>
+
+          <div className="sample-model-label">
+            <span>360 度查看</span>
+            <strong>{active.name}</strong>
+          </div>
+        </section>
+
+        <aside className="sample-memory-panel">
+          <div className="sample-memory-title">
+            <span />
+            <h2>我的学习回忆</h2>
+            <b>LOG</b>
+          </div>
+
+          <div className="sample-memory-list">
+            {active.memory.map((step) => (
+              <article className="sample-memory-step" key={`${step.label}-${step.title}`}>
+                <em>{step.label}</em>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </article>
+            ))}
+          </div>
+        </aside>
+      </main>
+
+      <section className="sample-knowledge">
+        <span>知识卡</span>
+        <p>{active.knowledge}</p>
+      </section>
+
+      {showScore && (
+        <div className="sample-score-modal" role="dialog" aria-modal="true" aria-labelledby="sample-score-title">
+          <button className="sample-modal-backdrop" type="button" aria-label="关闭评分" onClick={() => setShowScore(false)} />
+          <section className="sample-modal-card">
+            <button className="sample-modal-close" type="button" aria-label="关闭五维评分" onClick={() => setShowScore(false)}>
+              ×
             </button>
-          </div>
-        </div>
-      )}
-
-      {!generating && !genError && currentScoring && showResult && (
-        <div className="show3d-veil">
-          <div className="show3d-result" role="dialog" aria-modal="true">
-            <div className="show3d-result-head">
-              <span className="show3d-result-kicker">成 衣 完 成</span>
-              {genMocked && <span className="show3d-result-mock">离线示范</span>}
-            </div>
-
-            <div className="show3d-result-score">
-              <div className="show3d-result-total">
-                <span className="show3d-result-total-num">{Math.round(scoreTotal(currentScoring.scores))}</span>
-                <span className="show3d-result-total-unit">总评</span>
+            <div className="sample-modal-head">
+              <div>
+                <h2 id="sample-score-title">样品复盘</h2>
+                <span>{active.name} · AI 复盘评分</span>
               </div>
-              <div className="show3d-result-bars">
-                {DIMS.map((d) => {
-                  const v = currentScoring.scores[d.key]
-                  return (
-                    <div className="show3d-bar" key={d.key}>
-                      <span className="show3d-bar-label">{d.label}</span>
-                      <span className="show3d-bar-track">
-                        <span className="show3d-bar-fill" style={{ width: `${Math.max(0, Math.min(100, v))}%` }} />
-                      </span>
-                      <span className="show3d-bar-val">{v}</span>
-                    </div>
-                  )
-                })}
+              <strong>
+                总评 <b>{score}</b>
+              </strong>
+            </div>
+
+            <div className="sample-modal-grid">
+              <div className="sample-modal-score">
+                <span>{score}</span>
+                <small>总评</small>
               </div>
-            </div>
-
-            <div className="show3d-result-feedback">
-              <span className="show3d-result-by">师父点评</span>
-              <p>{currentScoring.master_feedback}</p>
-            </div>
-
-            {currentScoring.deductions.length > 0 && (
-              <div className="show3d-result-deduct">
-                {currentScoring.deductions.map((d, i) => (
-                  <span className="show3d-deduct" key={i}>
-                    ⚠ {d.dimension} −{d.points} · {d.reason}
-                  </span>
+              <div className="sample-modal-dims">
+                {active.dimensions.map((item) => (
+                  <article className="sample-modal-row" key={item.name}>
+                    <span>{item.name}</span>
+                    <i>
+                      <b style={{ width: `${item.value}%` }} />
+                    </i>
+                    <strong>{item.value}</strong>
+                  </article>
                 ))}
               </div>
-            )}
+            </div>
 
-            {currentScoring.next_task_recommendation && (
-              <div className="show3d-result-next">下一关 · {currentScoring.next_task_recommendation}</div>
-            )}
+            <article className="sample-mentor">
+              <span>师父点评</span>
+              <p>{active.mentor}</p>
+            </article>
 
-            <button className="show3d-result-confirm" onClick={() => setShowResult(false)}>
-              收下这匹香云纱 ›
+            <div className="sample-warning">{active.warning}</div>
+            <button className="sample-primary sample-modal-action" type="button" onClick={() => setShowScore(false)}>
+              退出查看模型 ›
             </button>
-          </div>
+          </section>
         </div>
       )}
     </div>
