@@ -1,8 +1,11 @@
-import { useEffect, useState, type ComponentType } from 'react'
+import { Component, useEffect, useState, type ReactNode, type ComponentType } from 'react'
+import { AudioManager } from '../components/AudioManager'
+import { SFXManager } from '../components/SFXManager'
 import { Stage } from '../components/Stage'
 import { NavContext, type SceneId } from './nav'
-import { GameProvider } from './GameState'
+import { GameProvider, useGame } from './GameState'
 import { checkBackend } from '../api/client'
+import { EventToast } from '../components/EventToast'
 import { StartScene } from '../scenes/StartScene'
 import { MapScene } from '../scenes/MapScene'
 import { BaikeScene } from '../scenes/BaikeScene'
@@ -52,7 +55,15 @@ const SCENES: Partial<Record<SceneId, ComponentType>> = {
   weaving: WorkshopScene, // 织布坊 → 第一人称 3D 工坊
 }
 
-export function App() {
+// Error Boundary — 防止 EventToast 渲染崩溃导致整页黑屏
+class EventBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) { super(props); this.state = { hasError: false } }
+  static getDerivedStateFromError() { return { hasError: true } }
+  render() { return this.state.hasError ? null : this.props.children }
+}
+
+function AppInner() {
+  const { pendingEvents } = useGame()
   const [scene, setScene] = useState<SceneId>('start')
   useEffect(() => {
     void checkBackend()
@@ -61,13 +72,44 @@ export function App() {
     }
   }, [])
   const Scene = SCENES[scene] ?? PlaceholderScene
+
   return (
-    <GameProvider>
+    <>
+      <AudioManager />
+      <SFXManager />
       <NavContext.Provider value={{ scene, go: setScene }}>
         <Stage>
           <Scene />
         </Stage>
       </NavContext.Provider>
+      <EventBoundary>
+        {pendingEvents.map((ev) => {
+          const npcNames: Record<string, string> = { granny: '阿婆', yeye: '老爷爷', ahua: '阿花' }
+          const npcSprites: Record<string, string> = {
+            granny: '/art/npc_popo.png',
+            yeye: '/art/npc_yeye.png',
+            ahua: '/art/villager-ahua.png',
+          }
+          return (
+            <EventToast
+              key={ev.event_id}
+              eventId={ev.event_id}
+              npcName={npcNames[ev.npc_id ?? ''] ?? ev.npc_id ?? '???'}
+              npcSprite={npcSprites[ev.npc_id ?? '']}
+              messages={ev.messages}
+              location={ev.location}
+            />
+          )
+        })}
+      </EventBoundary>
+    </>
+  )
+}
+
+export function App() {
+  return (
+    <GameProvider>
+      <AppInner />
     </GameProvider>
   )
 }

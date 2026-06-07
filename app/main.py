@@ -15,6 +15,7 @@ from slowapi.util import get_remote_address
 
 from app import __version__
 from app.api.routes import artwork as artwork_route
+from app.api.routes import events as events_route
 from app.api.routes import master as master_route
 from app.api.routes import scoring as scoring_route
 from app.api.routes import user_state as user_state_route
@@ -94,6 +95,7 @@ def create_app() -> FastAPI:
 
     # Routers
     app.include_router(master_route.router)
+    app.include_router(events_route.router)
     app.include_router(artwork_route.router)
     app.include_router(scoring_route.router)
     app.include_router(user_state_route.router)

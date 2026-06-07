@@ -27,3 +27,4 @@ export const loadQuestStep = (): number => {
   return Number.isInteger(v) ? v : -1
 }
 export const saveQuestStep = (s: number): void => localStorage.setItem(KEY, String(s))
+export const resetQuestStep = (): void => localStorage.removeItem(KEY)

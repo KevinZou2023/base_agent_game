@@ -87,6 +87,7 @@ export interface MasterChatRequest {
   player_state: PlayerState
   message?: string | null
   operation_event?: Record<string, unknown> | null
+  npc_id?: string
 }
 
 export interface ArtworkGenerateRequest {
@@ -160,4 +161,32 @@ export function scoreTotal(s: ScoreBreakdown): number {
   return (
     (s.process_score + s.pattern_score + s.color_score + s.culture_score + s.progress_score) / 5
   )
+}
+
+// ---------------------------------------------------------------------------
+// Event system types (sub-goal 2: AI random events)
+// ---------------------------------------------------------------------------
+
+export interface PendingEvent {
+  event_id: string
+  event_type: string
+  npc_id: string | null
+  location: string | null
+  priority: number
+  messages: string[]
+  effects: Record<string, unknown>
+  created_at: string
+}
+
+export interface EventCheckRequest {
+  player_state: PlayerState
+  current_weather: string | null
+  quest_step: number
+  arrived_location: string | null
+}
+
+export interface EventCheckResponse {
+  fired: boolean
+  pending_events: PendingEvent[]
+  event_messages: string[]
 }

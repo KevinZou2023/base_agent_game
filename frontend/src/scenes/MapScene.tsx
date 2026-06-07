@@ -10,6 +10,7 @@ import { NpcDialogue } from '../components/NpcDialogue'
 import { GOLDEN_PATH, loadQuestStep, saveQuestStep } from '../app/quest'
 import { useNav, type SceneId } from '../app/nav'
 import { useGame } from '../app/GameState'
+import { masterChat } from '../api/client'
 import { STAGE_W, STAGE_H } from '../theme/tokens'
 import './MapScene.css'
 
@@ -101,22 +102,114 @@ const NPCS: Npc[] = [
   },
 ]
 
+// 地图 NPC 对话 — 根据任务进度动态生成，更口语化、生活化
+function buildMapNpcLines(step: number, completedSteps: Set<number>, npcId: string): string[] {
+  const done = completedSteps.has(step)
+
+  if (step === -1) {
+    if (npcId === 'granny') return [
+      '哎呦，后生仔来啦，是想学香云纱吧？',
+      '那你得先去拜师，师父就住在村子里头那座大屋，去找他便是。',
+    ]
+    if (npcId === 'yeye') return [
+      '后生仔，这河边的风啊，带着薯莨的香气呢。',
+      '要学这门手艺，先去拜个师父吧，村子里找找看。',
+    ]
+    return ['先去找师父学学基本功吧，他就在村子里。', '师父会告诉你香云纱制作的每一步。']
+  }
+
+  if (step === 0 && !done) {
+    if (npcId === 'granny') return [
+      '还没去拜师吧？师父在「师父的家」，村子里找找看。',
+      '拜了师才能正式学艺，别着急，慢慢来。',
+    ]
+    if (npcId === 'yeye') return [
+      '先去拜师吧，师父那边才是正经学手艺的地方。',
+      '这香云纱啊，得师父领进门才行。',
+    ]
+    return ['先去拜师吧，师父在「师父的家」。', '拜师之后就可以一步一步学了。']
+  }
+
+  if (done) {
+    const next = GOLDEN_PATH[step]
+    if (!next) {
+      if (npcId === 'granny') return [
+        '哎呀，你这后生仔真出息，六道工序全学完啦！',
+        '师父要是知道，肯定高兴。好好做，将来这手艺就靠你们传下去咯。',
+      ]
+      if (npcId === 'yeye') return [
+        '嗯，学成了啊。香云纱这手艺，你算是入了门了。',
+        '好好做，将来也教教别的小子。',
+      ]
+      return ['你真厉害！香云纱的六道工序都学完了！', '继续努力，把这门手艺发扬光大！']
+    }
+    const locName: Record<string, string> = {
+      master: '师父的家', mountain: '青翠山', dye: '染坊',
+      drying: '晾晒场', river: '乌尔河', weaving: '织布坊',
+    }
+    const tips: Record<string, string> = {
+      mountain: '青翠山上有野生的薯莨，采一些来做莨水最合适。',
+      dye: '染坊里头浸染布料，这步可不能马虎。',
+      drying: '晾晒场晒莨布，大太阳天最好，晒出来的布才亮。',
+      river: '乌尔河的泥最适宜过乌，去那边找找看。',
+      weaving: '织布坊里可以做成品了，成品好不好就看你前面功夫深不深。',
+    }
+    if (npcId === 'granny') return [
+      `好，下一步该学「${next.objective}」咯。`,
+      `${tips[next.targetLoc] ?? '去吧，路上小心些。'}去「${locName[next.targetLoc]}」找相应的材料或者工具便是。`,
+    ]
+    if (npcId === 'yeye') return [
+      `下一步啊，是「${next.objective}」。`,
+      `${tips[next.targetLoc] ?? '别愣着了，快去吧。'}去「${locName[next.targetLoc]}」便是。`,
+    ]
+    return [`下一步是「${next.objective}」。`, `去「${locName[next.targetLoc] ?? next.targetLoc}」继续吧。`]
+  }
+
+  const current = GOLDEN_PATH[step]
+  const locName: Record<string, string> = {
+    master: '师父的家', mountain: '青翠山', dye: '染坊',
+    drying: '晾晒场', river: '乌尔河', weaving: '织布坊',
+  }
+  const curTips: Record<string, string> = {
+    mountain: '青翠山上采薯莨，晴天去最好，雨天采的偏湿。',
+    dye: '染坊浸染，看准火候，不要急。',
+    drying: '晾晒场晒莨布，日头最要紧，晒不够或者晒过头都不行。',
+    river: '过乌去乌尔河，晴天去最好，雨天河泥会变稀。',
+    weaving: '织布坊里织布成衣，前面的功夫都在这里见分晓。',
+  }
+  if (npcId === 'granny') return [
+    `你现在该学「${current.objective}」咯。`,
+    `${curTips[current.targetLoc] ?? '去试试吧。'}去「${locName[current.targetLoc]}」看看。完成了再来跟我说。`,
+  ]
+  if (npcId === 'yeye') return [
+    `这一步啊，是「${current.objective}」。`,
+    `${curTips[current.targetLoc] ?? '去吧。'}去「${locName[current.targetLoc]}」做好了再来。`,
+  ]
+  return [`你现在应该在学「${current.objective}」。`, `去「${locName[current.targetLoc] ?? current.targetLoc}」看看吧。`]
+}
+
 // ── walkable geometry (logical coords) — user-defined, calibrate with P overlay ──
 // Generous central courtyard, MINUS the pond & building footprints. Only the big
 // obstacles are blocked, so movement stays smooth (never pinched on trees/specks).
 const GRID_W = 252
 const GRID_H = 140
 const BOUND: [number, number][] = [
-  [660, 440],
+  [200, 440], // 左上扩展：原来660 → 200（让玩家能走到村庄左侧）
   [2740, 430],
   [3030, 720],
   [3030, 1310],
   [2500, 1585],
   [1230, 1620],
-  [780, 1370],
-  [580, 840],
+  [200, 900],    // 左下扩展：原来580 → 200（让玩家能走到青翠山方向）
 ]
 const POND = { cx: 1650, cy: 1035, rx: 315, ry: 150 }
+
+// 小型装饰障碍（树木、篱笆、石头等视觉上应阻挡的区域）
+// 按 P 键开启 debug overlay 逐个验证后再添加
+const DECOR_OBSTACLES: [number, number, number, number][] = [
+  // 示例：[x0, y0, x1, y1]
+  // 在 debug overlay 开启状态下，踩绿色（walkable）但视觉上不应该通过的区域
+]
 const BUILDINGS: [number, number, number, number][] = [
   [120, 240, 660, 560], // 村庄 (top-left cluster)
   [1430, 430, 1710, 690], // 师父家 (top-mid)
@@ -141,6 +234,7 @@ const walkable = (x: number, y: number): boolean => {
   const dy = (y - POND.cy) / POND.ry
   if (dx * dx + dy * dy < 1) return false
   for (const [x0, y0, x1, y1] of BUILDINGS) if (x >= x0 && x <= x1 && y >= y0 && y <= y1) return false
+  for (const [x0, y0, x1, y1] of DECOR_OBSTACLES) if (x >= x0 && x <= x1 && y >= y0 && y <= y1) return false
   return true
 }
 function buildDebugOverlay(): string | null {
@@ -182,9 +276,21 @@ type Near = { kind: 'loc'; loc: (typeof LOCATIONS)[number] } | { kind: 'npc'; np
 
 export function MapScene() {
   const { scene, go } = useNav()
-  const { setWeather } = useGame()
+  const { player, setWeather, resetProgress, completedSteps, gameTime } = useGame()
   const w = WEATHER[scene] ?? WEATHER.map
   const next = ORDER[(Math.max(0, ORDER.indexOf(scene)) + 1) % ORDER.length]
+  const [musicOn, setMusicOn] = useState(() => {
+    try { return localStorage.getItem('liangzuo.music_on') !== 'off' } catch { return true }
+  })
+
+  // 监听音乐切换事件，同步图标状态
+  useEffect(() => {
+    const handler = () => {
+      try { setMusicOn(localStorage.getItem('liangzuo.music_on') !== 'off') } catch {}
+    }
+    window.addEventListener('liangzuo.toggle-music', handler)
+    return () => window.removeEventListener('liangzuo.toggle-music', handler)
+  }, [])
 
   useEffect(() => {
     setWeather(scene === 'mapRainy' ? 'rainy' : scene === 'mapCloudy' ? 'cloudy' : 'sunny')
@@ -201,6 +307,8 @@ export function MapScene() {
   const [questStep, setQuestStep] = useState<number>(() => loadQuestStep())
   const [talking, setTalking] = useState<Npc | null>(null)
   const [talkLine, setTalkLine] = useState(0)
+  const [aiLines, setAiLines] = useState<string[]>([])
+  const [aiLoading, setAiLoading] = useState(false)
 
   const posRef = useRef(start)
   const camRef = useRef(start)
@@ -208,16 +316,22 @@ export function MapScene() {
   const nearRef = useRef<Near>(null)
   const goRef = useRef(go)
   const questStepRef = useRef(questStep)
+  const completedStepsRef = useRef(completedSteps)
   const talkingRef = useRef<Npc | null>(null)
   const talkLineRef = useRef(0)
   const advanceRef = useRef<() => void>(() => {})
+  const aiLinesRef = useRef<string[]>([])
+  const aiLoadingRef = useRef(false)
   const velRef = useRef({ x: 0, y: 0 })
   const distRef = useRef(0)
   const lastTsRef = useRef(0)
   goRef.current = go
   questStepRef.current = questStep
+  completedStepsRef.current = completedSteps
   talkingRef.current = talking
   talkLineRef.current = talkLine
+  aiLinesRef.current = aiLines
+  aiLoadingRef.current = aiLoading
 
   useEffect(() => saveQuestStep(questStep), [questStep])
 
@@ -231,13 +345,16 @@ export function MapScene() {
   const advance = () => {
     const npc = talkingRef.current
     if (!npc) return
-    const lines = questStepRef.current >= 0 ? npc.lines.after : npc.lines.before
+    const ai = aiLinesRef.current
+    const npcLines = buildMapNpcLines(questStepRef.current, completedStepsRef.current, npc.id)
+    const lines = ai.length > 0 ? ai : npcLines
     if (talkLineRef.current < lines.length - 1) {
       setTalkLine((l) => l + 1)
     } else {
       const wasGiverIntro = npc.giver && questStepRef.current < 0
       setTalking(null)
       setTalkLine(0)
+      setAiLines([])
       if (wasGiverIntro) setQuestStep(0)
     }
   }
@@ -265,12 +382,31 @@ export function MapScene() {
           setMoving(false)
           setTalking(n.npc)
           setTalkLine(0)
-        } else if (n?.kind === 'loc') {
-          const s = questStepRef.current
-          if (s >= 0 && s < GOLDEN_PATH.length && GOLDEN_PATH[s].targetLoc === n.loc.to) {
-            saveQuestStep(s + 1) // persist immediately (scene unmounts before the effect could run)
-            setQuestStep(s + 1)
+          if (n.npc.id === 'master') {
+            // 师父：调用 AI 聊天
+            setAiLoading(true)
+            setAiLines([])
+            masterChat({ player_state: player, message: null, npc_id: n.npc.id || undefined })
+              .then(({ data }) => {
+                const reply = data && data.master_reply || ""; const sentences = reply
+                  .split(/(?:[。！？]+)/)
+                  .map((s: string) => s.trim())
+                  .filter(Boolean)
+                const npcLines = buildMapNpcLines(questStepRef.current, completedStepsRef.current, 'master')
+                setAiLines(sentences.length ? sentences : npcLines)
+                setTalkLine(0)
+              })
+              .catch(() => {
+                setAiLines(buildMapNpcLines(questStepRef.current, completedStepsRef.current, 'master'))
+                setTalkLine(0)
+              })
+              .finally(() => setAiLoading(false))
+          } else {
+            // 阿婆/老爷爷：直接用任务进度对话，不用 AI
+            setAiLoading(false)
+            setAiLines([])
           }
+        } else if (n?.kind === 'loc') {
           goRef.current(n.loc.to)
         }
       } else if (k === 'p') {
@@ -407,7 +543,9 @@ export function MapScene() {
 
   const worldTransform = `translate(${STAGE_W / 2 - cam.x * ZOOM}px, ${STAGE_H / 2 - cam.y * ZOOM}px) scale(${ZOOM})`
   const targetLoc = questStep >= 0 && questStep < GOLDEN_PATH.length ? GOLDEN_PATH[questStep].targetLoc : null
-  const dialogueLines = talking ? (questStep >= 0 ? talking.lines.after : talking.lines.before) : []
+  const dialogueLines = aiLines.length > 0
+    ? aiLines
+    : (talking ? buildMapNpcLines(questStep, completedSteps, talking.id) : [])
 
   return (
     <SceneRoot>
@@ -450,10 +588,57 @@ export function MapScene() {
           <Character x={pos.x} y={pos.y} walking={moving} facing={facing} bobY={bob} sprite="/art/player_acai.png" />
         </div>
 
-        {w.overlay && <Abs x={0} y={0} w={STAGE_W} h={STAGE_H} className={`weather-overlay weather-${w.overlay}`} />}
+        {w.overlay && (
+          <Abs x={0} y={0} w={STAGE_W} h={STAGE_H} className={`weather-overlay weather-${w.overlay}`}>
+            {w.overlay === 'rainy' && <><div className="rain-layer-3" /><div className="rain-layer-4" /><div className="rain-splash" /></>}
+          </Abs>
+        )}
       </Abs>
 
-      <QuestTracker step={questStep} />
+      {/* DirectionArrow: 仅在目标不可见时显示在屏幕边缘的小箭头 */}
+      {targetLoc && (() => {
+        const loc = LOCATIONS.find(l => l.to === targetLoc)
+        if (!loc) return null
+        const tx = loc.x + 75
+        const ty = loc.y + 220
+        // Target screen position (player always at screen center)
+        const tsx = STAGE_W / 2 + (tx - cam.x) * ZOOM
+        const tsy = STAGE_H / 2 + (ty - cam.y) * ZOOM
+        const dx = tsx - STAGE_W / 2
+        const dy = tsy - STAGE_H / 2
+        const dist = Math.hypot(dx, dy)
+        const angle = Math.atan2(dy, dx)
+        const rotation = (angle * 180) / Math.PI + 90
+
+        // Only show arrow when target is off-screen
+        const margin = 80
+        const onScreen = tsx >= margin && tsx <= STAGE_W - margin && tsy >= margin && tsy <= STAGE_H - margin
+        if (onScreen) return null
+
+        const opacity = dist < 200 ? Math.max(0, (dist - 50) / 150) : 1
+        const edgeMargin = 60
+        const maxOffset = Math.min(
+          (STAGE_W / 2 - edgeMargin) / Math.abs(Math.cos(angle) || 1),
+          (STAGE_H / 2 - edgeMargin) / Math.abs(Math.sin(angle) || 1)
+        )
+        const arrowDist = maxOffset * 0.90
+        const ax = STAGE_W / 2 + Math.cos(angle) * arrowDist - 25
+        const ay = STAGE_H / 2 + Math.sin(angle) * arrowDist - 25
+        return (
+          <Abs x={ax} y={ay} w={90} h={90} style={{ opacity }}>
+            <div style={{
+              width: 0, height: 0,
+              borderLeft: '20px solid transparent',
+              borderRight: '20px solid transparent',
+              borderBottom: '38px solid #c89a6a',
+              filter: 'drop-shadow(0 0 10px rgba(200,154,106,0.8)) drop-shadow(0 3px 6px rgba(0,0,0,0.55))',
+              transform: `rotate(${rotation}deg)`,
+            }} />
+          </Abs>
+        )
+      })()}
+
+      <QuestTracker step={questStep} onReset={resetProgress} completedSteps={completedSteps} />
 
       {near && !talking && (
         <div className="map-prompt">
@@ -465,16 +650,26 @@ export function MapScene() {
         天气 · {w.weather}
       </button>
 
+      {/* 音乐开关按钮 */}
+      <button
+        className="map-music-toggle"
+        onClick={() => window.dispatchEvent(new Event('liangzuo.toggle-music'))}
+        title="音乐开关"
+      >
+        {musicOn ? '🔊' : '🔇'}
+      </button>
+
       {talking && (
         <NpcDialogue
           name={talking.name}
           text={dialogueLines[talkLine] ?? ''}
           last={talkLine >= dialogueLines.length - 1}
           onAdvance={advance}
+          loading={aiLoading}
         />
       )}
 
-      <TopStatusBar weather={w.weather} temp={w.temp} auspicious={w.auspicious} />
+      <TopStatusBar gameTime={gameTime} weather={w.weather} temp={w.temp} auspicious={w.auspicious} />
       <NavTabs />
       <BackButton onClick={() => go('start')} />
     </SceneRoot>

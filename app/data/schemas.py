@@ -319,6 +319,7 @@ class MasterChatRequest(BaseModel):
     player_state: PlayerState
     message: Optional[str] = None
     operation_event: Optional[dict[str, Any]] = None
+    npc_id: Optional[str] = None  # NPC 标识符，用于个性化人设
 
 
 class ArtworkGenerateRequest(BaseModel):
@@ -370,3 +371,60 @@ class UserStateUpdate(BaseModel):
 class ErrorResponse(BaseModel):
     detail: str
     code: str = "internal_error"
+
+
+# ---------------------------------------------------------------------------
+# Event system (sub-goal 2: AI random events)
+# ---------------------------------------------------------------------------
+
+
+class EventTriggerType(str, Enum):
+    TIME_BASED = "time_based" # 每 N 分钟真实时间触发
+    CRAFT_RISK = "craft_risk"         # 同 risk_tag 出现 ≥N 次
+    QUEST_PROGRESS = "quest_progress" # 任务步骤到达指定位置
+    WEATHER_CHANGE = "weather_change" # 天气变化时
+    RANDOM = "random"                 # 无条件随机概率
+
+
+class GameEvent(BaseModel):
+    """一个可触发的事件模板（存储在 data/events/*.json）。"""
+
+    event_id: str = Field(description="唯一标识，如 evt_ahua_storm_warning")
+    event_type: str = Field(description="事件类型，如 weather_warning / villager_request / craft_tip")
+    trigger_type: EventTriggerType
+    trigger_conditions: dict[str, Any] = Field(
+        default_factory=dict,
+        description="触发条件，如 {\"weather\": \"rainy\", \"quest_step\": 2}",
+    )
+    npc_id: Optional[str] = Field(default=None, description="关联的 NPC ID")
+    location: Optional[str] = Field(default=None, description="事件所属场景，如 village / mountain")
+    priority: int = Field(default=1, ge=0, description="优先级，高值优先触发")
+    cooldown_minutes: Optional[int] = Field(default=None, description="触发后多少分钟内不重复")
+    base_messages: list[str] = Field(
+        default_factory=list,
+        description="事件默认对话（当 LLM 生成失败时 fallback 用）",
+    )
+    effects: dict[str, Any] = Field(
+        default_factory=dict,
+        description="触发后影响，如 {\"affinity_npc\": 5}",
+    )
+
+
+class PendingEvent(BaseModel):
+    """返回给前端的待处理事件（包含 AI生成的对话）。"""
+
+    event_id: str
+    event_type: str
+    npc_id: Optional[str]
+    location: Optional[str]
+    priority: int
+    messages: list[str] = Field(default_factory=list, description="AI生成的对话行")
+    effects: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class TriggerCheckResult(BaseModel):
+    """事件调度器单次 tick 的评估结果。"""
+
+    eligible_events: list[GameEvent] = Field(default_factory=list)
+    player_state_snapshot: PlayerState

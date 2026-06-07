@@ -1,0 +1,47 @@
+[
+  {
+    "event_id": "evt_craft_wu_too_long",
+    "event_type": "craft_warning",
+    "trigger_type": "craft_risk",
+    "trigger_conditions": { "risk_tag": "wu_too_long", "count": 2 },
+    "npc_id": "yeye",
+    "location": "river",
+    "priority": 6,
+    "cooldown_minutes": 60,
+    "base_messages": [
+      "老爷爷：过乌时间太长，乌亮面会发灰发暗，冇晒足日头就系咁。",
+      "老爷爷：下次记住，河泥唔好浸超过九十分钟，布同人都会焗坏。"
+    ],
+    "effects": { "learned_risk": "wu_too_long" }
+  },
+  {
+    "event_id": "evt_craft_sun_insufficient",
+    "event_type": "craft_warning",
+    "trigger_type": "craft_risk",
+    "trigger_conditions": { "risk_tag": "sun_insufficient", "count": 2 },
+    "npc_id": "granny",
+    "location": "village",
+    "priority": 6,
+    "cooldown_minutes": 60,
+    "base_messages": [
+      "阿婆：晒莨唔够，布面红褐唔够深，过乌都起唔到乌亮面。",
+      "阿婆：累计至少三日日晒，每日四至八个钟头，记住了后生。"
+    ],
+    "effects": { "learned_risk": "sun_insufficient" }
+  },
+  {
+    "event_id": "evt_craft_dye_insufficient",
+    "event_type": "craft_warning",
+    "trigger_type": "craft_risk",
+    "trigger_conditions": { "risk_tag": "dye_insufficient", "count": 2 },
+    "npc_id": "yeye",
+    "location": "river",
+    "priority": 6,
+    "cooldown_minutes": 60,
+    "base_messages": [
+      "老爷爷：浸染次数唔够，薯莨单宁唔够多，铁离子反应唔上，布面色泽偏淡。",
+      "老爷爷：至少浸够八次以上，睇布面食色咁样再加。"
+    ],
+    "effects": { "learned_risk": "dye_insufficient" }
+  }
+]

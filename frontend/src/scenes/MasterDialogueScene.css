@@ -73,6 +73,18 @@
   cursor: default;
 }
 
+.md-next-hint {
+  margin-top: 12px;
+  font-size: 30px;
+  color: #c89a6a;
+  text-align: right;
+  animation: md-blink 1.1s ease-in-out infinite;
+}
+@keyframes md-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 .md-option {
   width: 100%;
   height: 100%;
@@ -93,4 +105,72 @@
 
 .md-option:active {
   transform: translateY(2px);
+}
+
+/* 语音输入按钮 */
+.md-voice-btn {
+  width: 100%;
+  height: 100%;
+  background: #ebe5d7;
+  box-shadow: inset 0 0 0 8px #837664;
+  border-radius: 16px;
+  color: #837664;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: filter 0.12s ease, transform 0.08s ease;
+  border: none;
+  font-size: 62px;
+  font-family: var(--font-ui);
+  font-weight: bold;
+}
+
+.md-voice-btn:hover {
+  filter: brightness(1.05);
+}
+
+.md-voice-btn:active {
+  transform: translateY(2px);
+}
+
+.md-voice-btn.listening {
+  background: #c0392b;
+  color: #fff;
+  box-shadow: inset 0 0 0 8px #a02020;
+  animation: voice-pulse 1s ease-in-out infinite;
+}
+
+@keyframes voice-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+/* 语音识别确认按钮 */
+.md-voice-confirm {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.md-voice-send {
+  padding: 8px 28px;
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font-ui);
+  font-size: 34px;
+  cursor: pointer;
+}
+
+.md-voice-cancel {
+  padding: 8px 28px;
+  background: rgba(131, 118, 100, 0.15);
+  color: #837664;
+  border: 2px solid #837664;
+  border-radius: 10px;
+  font-family: var(--font-ui);
+  font-size: 34px;
+  cursor: pointer;
 }

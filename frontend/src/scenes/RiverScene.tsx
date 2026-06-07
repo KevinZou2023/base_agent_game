@@ -29,7 +29,7 @@ function MudSpot({ x, y, onCollect }: { x: number; y: number; onCollect: () => v
 
 export function RiverScene() {
   const { go } = useNav()
-  const { setParams, patchPlayer, addHistory } = useGame()
+  const { setParams, patchPlayer, addHistory, completeQuestStep, weather } = useGame()
   const [collected, setCollected] = useState(0)
   const [filtered, setFiltered] = useState<TimingResult | null>(null)
 
@@ -37,14 +37,17 @@ export function RiverScene() {
   const purity = filtered ? Math.round(filtered.q * 100) : 0
   const thickness = filtered ? Math.round((0.4 + filtered.q * 0.4) * 100) / 100 : 0
   const masterLine =
-    filtered && filtered.q >= 0.8 ? '泥细如膏，过乌定然乌黑发亮。'
-    : filtered && filtered.q >= 0.5 ? '尚可，再多筛两遍更细。'
-    : '泥太粗，过乌易花，回头细筛。'
+    filtered && filtered.q >= 0.8
+      ? (weather === 'rainy' ? '雨后河水泥稀，过乌效果略降，泥要偏厚些。' : '泥细如膏，过乌定然乌黑发亮。')
+    : filtered && filtered.q >= 0.5
+      ? (weather === 'rainy' ? '雨天泥偏稀，过乌效果差些，建议多筛一遍。' : '尚可，再多筛两遍更细。')
+      : (weather === 'rainy' ? '雨后泥粗，过乌效果差，今天不宜过乌。' : '泥太粗，过乌易花，回头细筛。')
 
   const confirm = () => {
     setParams({ wu_mud_thickness: thickness, wu_apply_count: 2 })
     patchPlayer({ current_stage: 'parameter', selected_materials: { 河泥: String(MUD.length) } })
     addHistory({ occurred_at: new Date().toISOString(), stage: 'parameter', note: `过滤河泥 纯度${purity}%` })
+    completeQuestStep(4)
     go('map')
   }
 

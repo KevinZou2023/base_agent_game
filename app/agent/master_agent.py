@@ -73,6 +73,7 @@ class MasterAgent:
         player_state: PlayerState,
         message: str | None = None,
         operation_event: dict[str, Any] | None = None,
+        npc_id: str | None = None,
     ) -> AgentResponse:
         """Run one full Agent turn. Returns master-voice reply + structured metadata."""
 
@@ -93,7 +94,7 @@ class MasterAgent:
         # ---- 2) Agent loop with function calling ----
         tool_call_log: list[dict[str, Any]] = []
         messages: list[ChatMessage] = self._build_initial_messages(
-            working_state, rule_result, event, message
+            working_state, rule_result, event, message, npc_id
         )
         final_reply: str | None = None
 
@@ -195,6 +196,7 @@ class MasterAgent:
         rule_result,
         event: OperationEvent,
         player_message: str | None,
+        npc_id: str | None = None,
     ) -> list[ChatMessage]:
         """Build system + user messages for the first LLM turn."""
 
@@ -205,6 +207,7 @@ class MasterAgent:
             event_type=event.event_type,
             player_message=player_message,
             recent_risk_tags=[h.risk_tag for h in player_state.history if h.risk_tag][-10:],
+            npc_id=npc_id,
         )
         return [
             {"role": "system", "content": MASTER_SYSTEM_PROMPT},
@@ -262,6 +265,97 @@ class MasterAgent:
         if rule_result.risks:
             return "explicit", 1
         return "encourage", 1
+
+    # ------------------------------------------------------------------
+    # Event generation (sub-goal 2)
+    # ------------------------------------------------------------------
+
+    def generate_event(
+        self,
+        player_state: PlayerState,
+        candidate_events: list[dict],
+        current_weather: str | None = None,
+    ) -> AgentResponse:
+        """Pick the best event from candidates and generate NPC dialogue for it.
+
+        Uses a dedicated event-generation system prompt (not the teaching persona).
+        Returns an AgentResponse with master_reply containing 2 dialogue lines.
+        """
+
+        from app.agent.prompts import (
+            EVENT_GENERATION_PROMPT,
+            build_event_generation_prompt,
+        )
+        from app.data.schemas import GameStage
+
+        recent_risks = [h.risk_tag for h in player_state.history if h.risk_tag][-10:]
+
+        user_content = build_event_generation_prompt(
+            player_state=player_state,
+            candidate_events=candidate_events,
+            current_weather=current_weather,
+            recent_risk_tags=recent_risks,
+        )
+
+        messages: list[ChatMessage] = [
+            {"role": "system", "content": EVENT_GENERATION_PROMPT},
+            {"role": "user", "content": user_content},
+        ]
+
+        try:
+            resp = self.llm.chat(
+                messages,
+                temperature=0.8,
+                max_tokens=300,
+            )
+        except Exception as e:
+            logger.error("LLM event generation failed: {}", e)
+            return AgentResponse(
+                master_reply="（事件生成失败）",
+                risk_tags=[],
+                hint_type="silent",
+                intervention_level=0,
+                recommended_actions=[],
+                knowledge_used=[],
+                operation_summary="event_generation_failed",
+                stage=player_state.current_stage,
+                debug={"error": str(e)},
+            )
+
+        content = resp.content or ""
+
+        # Parse the 「」quoted lines from response
+        import re
+
+        raw_lines = re.findall(r"「([^」]+)」", content)
+        if not raw_lines or (len(raw_lines) == 1 and raw_lines[0] == "不触发"):
+            # No event triggered — return empty
+            return AgentResponse(
+                master_reply="",
+                risk_tags=[],
+                hint_type="silent",
+                intervention_level=0,
+                recommended_actions=[],
+                knowledge_used=[],
+                operation_summary="no_event_triggered",
+                stage=player_state.current_stage,
+                debug={"raw_llm_response": content[:200]},
+            )
+
+        # Combine lines into a master_reply (AgentResponse format uses one string)
+        master_reply = "".join(f"「{line}」" for line in raw_lines[:2])
+
+        return AgentResponse(
+            master_reply=master_reply,
+            risk_tags=[],
+            hint_type="silent",
+            intervention_level=0,
+            recommended_actions=[],
+            knowledge_used=[],
+            operation_summary="event_triggered",
+            stage=player_state.current_stage,
+            debug={"raw_llm_response": content[:200], "lines_extracted": raw_lines[:2]},
+        )
 
 
 __all__ = ["MasterAgent", "MAX_TOOL_ITERATIONS"]

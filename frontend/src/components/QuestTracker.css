@@ -106,3 +106,85 @@
   color: #b03a2b;
   font-weight: 600;
 }
+.quest-reset-btn {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 0;
+  background: rgba(192, 57, 43, 0.12);
+  border: 2px solid #c0392b;
+  border-radius: 8px;
+  color: #c0392b;
+  font-size: 30px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  letter-spacing: 0.15em;
+  transition: background 0.2s;
+}
+.quest-reset-btn:hover {
+  background: rgba(192, 57, 43, 0.22);
+}
+
+/* 确认弹层 */
+.quest-confirm-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+.quest-confirm-box {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 81;
+  width: 820px;
+  padding: 48px 56px 44px;
+  background: linear-gradient(180deg, rgba(242, 228, 197, 0.98), rgba(220, 206, 170, 0.98));
+  border: 3px solid #5b3f1f;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  font-family: var(--font-ui);
+  color: #3a2a18;
+  text-align: center;
+}
+.quest-confirm-title {
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #543f27;
+  margin-bottom: 24px;
+}
+.quest-confirm-text {
+  font-size: 32px;
+  line-height: 1.6;
+  color: #6d5c48;
+  margin-bottom: 36px;
+}
+.quest-confirm-btns {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+}
+.quest-confirm-btn {
+  padding: 14px 52px;
+  border-radius: 10px;
+  font-size: 32px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  border: none;
+  letter-spacing: 0.1em;
+}
+.quest-confirm-btn.cancel {
+  background: rgba(91, 63, 31, 0.12);
+  border: 2px solid #5b3f1f;
+  color: #543f27;
+}
+.quest-confirm-btn.confirm {
+  background: #c0392b;
+  color: #fff;
+}
+.quest-confirm-btn.confirm.danger {
+  background: #922b21;
+}

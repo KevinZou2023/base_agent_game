@@ -41,6 +41,7 @@ def master_chat(
             player_state=body.player_state,
             message=body.message,
             operation_event=body.operation_event,
+            npc_id=body.npc_id,
         )
     except Exception as e:
         logger.exception("Master chat failed: {}", e)

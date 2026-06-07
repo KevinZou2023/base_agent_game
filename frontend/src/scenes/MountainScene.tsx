@@ -24,7 +24,7 @@ const MTN_LAYERS = [
 
 export function MountainScene() {
   const { go } = useNav()
-  const { setParams, patchPlayer, addHistory } = useGame()
+  const { setParams, patchPlayer, addHistory, completeQuestStep, weather } = useGame()
   const [picked, setPicked] = useState<TimingResult[]>([])
   const done = picked.length >= TARGET
 
@@ -35,10 +35,13 @@ export function MountainScene() {
     counts[r.label[0]]++
   })
   const avg = picked.length ? picked.reduce((s, r) => s + r.q, 0) / picked.length : 0
-  const concentration = Math.round((0.45 + avg * 0.5) * 100) / 100
+  // 天气影响浓度：晴天+10%，雨天-15%，多云正常
+  const weatherMod = weather === 'sunny' ? 1.10 : weather === 'rainy' ? 0.85 : 1.0
+  const concentration = Math.round((0.45 + avg * 0.5) * weatherMod * 100) / 100
 
   const masterLine =
-    concentration >= 0.8
+    weather === 'rainy' ? '雨天采的薯莨偏湿，浓度会低些，浸染时多浸两道。'
+    : concentration >= 0.8
       ? '薯莨饱满，汁色定然浓亮，下缸去罢。'
       : concentration >= 0.6
         ? '尚可，浸染时多浸两道便好。'
@@ -48,6 +51,7 @@ export function MountainScene() {
     setParams({ shuliang_concentration: concentration })
     patchPlayer({ current_stage: 'material', selected_materials: { 薯莨: String(picked.length) } })
     addHistory({ occurred_at: new Date().toISOString(), stage: 'material', note: `采薯莨 ×${picked.length}` })
+    completeQuestStep(1)
     go('map')
   }
 

@@ -65,8 +65,16 @@ export interface Result<T> {
 }
 
 export async function masterChat(req: MasterChatRequest): Promise<Result<AgentResponse>> {
+  // Safety timeout: if the request takes > 12s, treat as offline fallback
+  const safetyTimeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error('safety timeout')), 12000)
+  )
   try {
-    return { data: await http<AgentResponse>('/master/chat', { method: 'POST', body: JSON.stringify(req) }), mocked: false }
+    const result = await Promise.race([
+      http<AgentResponse>('/master/chat', { method: 'POST', body: JSON.stringify(req) }),
+      safetyTimeout,
+    ])
+    return { data: result, mocked: false }
   } catch {
     setStatus('offline')
     return { data: mockMasterChat(req), mocked: true }
@@ -112,6 +120,45 @@ export async function updateUserState(
     setStatus('offline')
     const s = mockUserState(playerId)
     return { data: { ...s, nickname: body.nickname ?? s.nickname, level: body.level ?? s.level }, mocked: true }
+  }
+}
+
+export async function checkEvents(req: {
+  player_state: unknown
+  current_weather: string | null
+  quest_step: number
+  arrived_location: string | null
+}): Promise<Result<{ fired: boolean; pending_events: unknown[]; event_messages: string[] }>> {
+  try {
+    return { data: await http<{ fired: boolean; pending_events: unknown[]; event_messages: string[] }>('/events/check', { method: 'POST', body: JSON.stringify(req) }), mocked: false }
+  } catch {
+    setStatus('offline')
+    return { data: { fired: false, pending_events: [], event_messages: [] }, mocked: true }
+  }
+}
+
+export async function getPendingEvents(): Promise<Result<unknown[]>> {
+  try {
+    return { data: await http<unknown[]>('/events/pending'), mocked: false }
+  } catch {
+    setStatus('offline')
+    return { data: [], mocked: true }
+  }
+}
+
+export async function dismissEvent(eventId: string): Promise<Result<{ ok: boolean }>> {
+  try {
+    return { data: await http<{ ok: boolean }>(`/events/${eventId}/dismiss`, { method: 'POST' }), mocked: false }
+  } catch {
+    return { data: { ok: false }, mocked: true }
+  }
+}
+
+export async function markGameStart(): Promise<Result<{ status: string }>> {
+  try {
+    return { data: await http<{ status: string }>('/events/game/start', { method: 'POST' }), mocked: false }
+  } catch {
+    return { data: { status: 'ok' }, mocked: true }
   }
 }
 

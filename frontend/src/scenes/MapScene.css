@@ -177,6 +177,11 @@
   background: rgba(20, 12, 6, 0.9);
 }
 
+@keyframes dir-pulse {
+  0%, 100% { transform: rotate(var(--dir-rot, 0deg)) scale(1); filter: drop-shadow(0 0 12px rgba(200,154,106,0.9)) drop-shadow(0 4px 8px rgba(0,0,0,0.6)); }
+  50% { transform: rotate(var(--dir-rot, 0deg)) scale(1.18); filter: drop-shadow(0 0 20px rgba(200,154,106,1)) drop-shadow(0 4px 8px rgba(0,0,0,0.6)); }
+}
+
 /* ── weather overlays ─────────────────────────────────────────── */
 .weather-overlay {
   pointer-events: none;
@@ -189,21 +194,128 @@
   background: linear-gradient(180deg, rgba(120, 130, 140, 0.32), rgba(120, 130, 140, 0.12));
 }
 
-/* 阴雨 — bluish dim + animated diagonal rain streaks */
+/* 阴雨 — 真实雨效：多层粒子 + 风向角度 + 速度差异 + 底部溅射 */
 .weather-rainy {
+  position: relative;
+  overflow: hidden;
   background:
+    linear-gradient(0deg, rgba(25, 40, 60, 0.65) 0%, transparent 25%),
+    linear-gradient(180deg, rgba(40, 55, 75, 0.6), rgba(30, 45, 65, 0.35));
+}
+
+/* 四层雨：角度渐陡（风吹效果），速度渐快，透明度渐高 */
+/* Layer 1 — 远景细雨，72°斜风，慢速 */
+.weather-rainy::before {
+  content: '';
+  position: absolute;
+  inset: -100% 0;
+  background-image:
     repeating-linear-gradient(
       72deg,
-      rgba(220, 230, 240, 0.32) 0px,
-      rgba(220, 230, 240, 0.32) 2px,
-      transparent 2px,
-      transparent 22px
-    ),
-    linear-gradient(180deg, rgba(40, 55, 75, 0.4), rgba(40, 55, 75, 0.22));
-  background-size: 220px 220px, 100% 100%;
-  animation: rain-fall 0.5s linear infinite;
+      rgba(130, 160, 200, 0.18) 0px,
+      rgba(130, 160, 200, 0.18) 1px,
+      transparent 1px,
+      transparent 18px
+    );
+  background-size: 130px 130px;
+  animation: rain-1 2s linear infinite;
+  pointer-events: none;
+  z-index: 0;
 }
-@keyframes rain-fall {
-  from { background-position: 0 0, 0 0; }
-  to { background-position: 70px 220px, 0 0; }
+
+/* Layer 2 — 中景中雨，75°斜风，中速 */
+.weather-rainy::after {
+  content: '';
+  position: absolute;
+  inset: -100% 0;
+  background-image:
+    repeating-linear-gradient(
+      75deg,
+      rgba(160, 190, 225, 0.28) 0px,
+      rgba(160, 190, 225, 0.28) 1.2px,
+      transparent 1.2px,
+      transparent 32px
+    );
+  background-size: 240px 240px;
+  animation: rain-2 1.1s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Layer 3 — 近景大雨，80°斜风，快速 */
+.rain-layer-3 {
+  position: absolute;
+  inset: -100% 0;
+  background-image:
+    repeating-linear-gradient(
+      80deg,
+      rgba(190, 215, 240, 0.4) 0px,
+      rgba(190, 215, 240, 0.4) 1.8px,
+      transparent 1.8px,
+      transparent 55px
+    );
+  background-size: 420px 420px;
+  animation: rain-3 0.5s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Layer 4 — 斜风粗雨滴，82°，最快 */
+.rain-layer-4 {
+  position: absolute;
+  inset: -100% 0;
+  background-image:
+    repeating-linear-gradient(
+      82deg,
+      rgba(210, 230, 248, 0.32) 0px,
+      rgba(210, 230, 248, 0.32) 2px,
+      transparent 2px,
+      transparent 80px
+    );
+  background-size: 600px 600px;
+  animation: rain-4 0.28s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes rain-1 {
+  from { background-position: 0 0; }
+  to   { background-position: 80px 200px; }
+}
+@keyframes rain-2 {
+  from { background-position: 0 0; }
+  to   { background-position: 110px 280px; }
+}
+@keyframes rain-3 {
+  from { background-position: 0 0; }
+  to   { background-position: 160px 480px; }
+}
+@keyframes rain-4 {
+  from { background-position: 0 0; }
+  to   { background-position: 200px 650px; }
+}
+
+/* 底部溅射 — 模拟雨滴落地的小水花 */
+.rain-splash {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background:
+    radial-gradient(ellipse 8px 4px at 12% 100%, rgba(180, 210, 240, 0.35) 0%, transparent 100%),
+    radial-gradient(ellipse 6px 3px at 28% 100%, rgba(180, 210, 240, 0.28) 0%, transparent 100%),
+    radial-gradient(ellipse 9px 4px at 45% 100%, rgba(180, 210, 240, 0.32) 0%, transparent 100%),
+    radial-gradient(ellipse 5px 3px at 62% 100%, rgba(180, 210, 240, 0.25) 0%, transparent 100%),
+    radial-gradient(ellipse 7px 4px at 78% 100%, rgba(180, 210, 240, 0.3) 0%, transparent 100%),
+    radial-gradient(ellipse 8px 3px at 91% 100%, rgba(180, 210, 240, 0.28) 0%, transparent 100%);
+  animation: splash 0.6s ease-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes splash {
+  0%   { opacity: 0.9; transform: scaleY(1); }
+  60%  { opacity: 0.5; transform: scaleY(1.3); }
+  100% { opacity: 0;   transform: scaleY(1.8); }
 }

@@ -1,25 +1,33 @@
 import { Abs } from './Abs'
 import './TopStatusBar.css'
 
+const SHICHEN = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
+
 export interface TopStatusBarProps {
-  time?: string
-  /** 时辰 marker glyph shown in the red seal, e.g. 午 */
-  shichen?: string
+  /**游戏内分钟数（从0开始），驱动时钟和时辰显示 */
+  gameTime?: number
   weather?: string
   temp?: string
   /** 宜 (auspicious) activity, e.g. 晒布 */
   auspicious?: string
 }
 
-/** Top-center status plaque — sits just inside the ornate frame's top border
- *  (which is 70px thick), fully visible. Time, ganzhi seal, weather, today's 宜. */
+/** Top-center status plaque — time, ganzhi seal, weather, today's 宜. */
 export function TopStatusBar({
-  time = '11:20',
-  shichen = '午',
+  gameTime,
   weather = '晴朗',
   temp = '26°C',
   auspicious = '晒布',
 }: TopStatusBarProps) {
+  // gameTime 是游戏内分钟数，1 天 = 24 * 60 分钟 = 1440 分钟
+  const TOTAL_MINUTES = 24 * 60
+  const total = ((gameTime ?? 0) % TOTAL_MINUTES + TOTAL_MINUTES) % TOTAL_MINUTES
+  const hours = Math.floor(total / 60)
+  const minutes = total % 60
+  const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+  // 十二时辰：每 2 小时一个时辰
+  const shichen = SHICHEN[Math.floor(hours / 2) % 12]
+
   return (
     <>
       <Abs x={1257} y={80} w={728} h={222} className="status-pill" />
@@ -27,7 +35,7 @@ export function TopStatusBar({
         {shichen}
       </Abs>
       <Abs x={1353} y={122} w={218} h={95} className="status-time">
-        {time}
+        {timeStr}
       </Abs>
       <Abs x={1576} y={138} w={62} h={62} className="status-weather-icon">
         <svg viewBox="0 0 100 100" width="62" height="62" aria-hidden>

@@ -24,9 +24,9 @@ from app.data.schemas import (
 MASTER_SYSTEM_PROMPT = """你是一位顺德伦教的香云纱老师傅，做这门活计四十年，正在带一个学徒在你的染晒场上做一块香云纱。系统会给你学徒的当前操作、参数、规则检测结果和提问，你要决定怎么回应。
 
 【你的人设】
-- 语气朴实、慢条斯理，偶尔带一两句广东味普通话（"晒得唔够"、"过乌靠时辰"）。
-- 经常用日常比喻：薯莨像茶汤、过乌靠时辰、晒莨看天色。
-- 不爱讲大道理，看到问题先指出来，再说为什么，最后给一个能马上动手的改法。
+- 语气朴实、慢条斯理，用词通俗易懂，不使用方言俚语。
+- 经常用简单的日常比喻讲工艺。
+- 看到问题直接说原因和改法，不绕弯子。
 - 鼓励试错，但碰到会糟蹋整块布的高风险问题，会语气重一些。
 
 【你掌握的工艺常识】
@@ -100,6 +100,38 @@ def render_risks(risks: list[RiskFinding]) -> str:
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------------------
+# NPC personas — injected when the player talks to a specific NPC
+# ---------------------------------------------------------------------------
+
+NPC_PERSONAS: dict[str, dict[str, str]] = {
+    "granny": {
+        "name": "阿婆",
+        "persona": (
+            "你是村口的阿婆，村里的人都敬重你。你说话温和亲切，像对待自家孩子一样。"
+            "善于用简单的比喻讲清楚香云纱的道理。不急不躁，但该提醒的一定提醒。"
+        ),
+        "topics": "香云纱历史传承、生活智慧、鼓励学徒",
+    },
+    "yeye": {
+        "name": "老爷爷",
+        "persona": (
+            "你是乌尔河边的老爷爷，一辈子守着过乌这道工序，对河泥的特性非常熟悉。"
+            "话不多，但每句都实在。关注工艺本身，看到问题会直接告诉你原因和怎么改。"
+        ),
+        "topics": "过乌技巧、工艺细节、参数调整",
+    },
+    "ahua": {
+        "name": "阿花",
+        "persona": (
+            "你是村里的热心姑娘，熟悉村里的事务，也关心来学手艺的人。"
+            "说话直接热情，乐于助人，喜欢给人鼓劲。"
+        ),
+        "topics": "村庄信息、采料建议、鼓励学徒",
+    },
+}
+
+
 def build_agent_initial_user_message(
     player_state: PlayerState,
     rule_result: RuleCheckResult,
@@ -107,10 +139,18 @@ def build_agent_initial_user_message(
     event_type: str,
     player_message: str | None = None,
     recent_risk_tags: list[str] | None = None,
+    npc_id: str | None = None,
 ) -> str:
     """First user message that frames the situation for the LLM."""
 
     lines: list[str] = []
+
+    # NPC 人设上下文（如果有）
+    if npc_id and npc_id in NPC_PERSONAS:
+        persona = NPC_PERSONAS[npc_id]
+        lines.append(f"【对话对象】{persona['name']}（{persona['persona']}）")
+        lines.append(f"【NPC 话题偏好】{persona['topics']}")
+
     lines.append(f"【学徒水平】{player_state.learner_level.value}")
     lines.append(
         f"【当前阶段】{STAGE_LABEL.get(player_state.current_stage, player_state.current_stage.value)}"
@@ -153,10 +193,83 @@ def encouragement_response(level) -> str:
     return "可以，按你自己的节奏来。"
 
 
+# ---------------------------------------------------------------------------
+# Event generation prompt
+# ---------------------------------------------------------------------------
+
+EVENT_GENERATION_PROMPT = """你是一个事件叙事生成器。你的任务是根据当前游戏状态，从候选事件列表中选出一个最合适触发的事件，然后生成该事件的 NPC 对话。
+
+【你的身份】
+你不是师傅，你是游戏世界的叙事协调者。你负责在合适的时机推进剧情，让游戏世界显得"活"。
+
+【输入信息】
+系统会给你：
+1. 当前玩家状态（水平、阶段、任务主题）
+2. 当前天气
+3. 候选事件列表（每个事件有：类型、触发条件、关联 NPC、基础对话）
+4. 玩家最近的风险标签（如果有）
+
+【选择逻辑】
+- 如果天气从晴天变为阴天/雨天，优先触发 weather_warning 类型
+- 如果玩家反复犯同一个工艺错误（risk_tag 出现 ≥2 次），优先触发 craft_warning 类型
+- 如果玩家到达某个关键地点，触发 quest_milestone 类型
+- 如果都没有，选 priority 最高的
+
+【输出规则】
+- 选出一个事件后，生成该 NPC 的2 句对话（口语化，带 NPC 人设）
+- 第一句引出情境，第二句推进对话或给出建议/提醒
+- 每句 20–50 字，用中文
+- 不要分点编号，直接输出两句对话，每句用「」括起来
+- 如果候选事件都不适合当前情况，输出「不触发」两个字
+
+【NPC 人设参考】
+- 阿婆（granny）：温和慈祥，说话带广东味，喜欢用生活比喻鼓励学徒
+- 老爷爷（yeye）：话不多但实在，技术扎实，常说"看天色"、"靠时辰"
+- 阿花（ahua）：热心村民，关注天气和路况，关心学徒安全
+
+输出格式示例：
+「今日天色几好，薯莨晒得透。」
+「趁太阳足，多刷两遍薯莨汁，晚上过乌效果更佳。」
+"""
+
+
+def build_event_generation_prompt(
+    player_state: PlayerState,
+    candidate_events: list[dict],
+    current_weather: str | None = None,
+    recent_risk_tags: list[str] | None = None,
+) -> str:
+    """Build the user message for event generation."""
+    lines: list[str] = []
+
+    lines.append(f"【当前天气】{current_weather or '未知'}")
+    lines.append(f"【玩家水平】{player_state.learner_level.value}")
+    lines.append(
+        f"【当前阶段】{STAGE_LABEL.get(player_state.current_stage, player_state.current_stage.value)}"
+    )
+    if player_state.task_theme:
+        lines.append(f"【当前任务】{player_state.task_theme}")
+    if recent_risk_tags:
+        lines.append(f"【最近风险标签】{recent_risk_tags}")
+    lines.append("【候选事件列表】")
+    for ev in candidate_events:
+        lines.append(
+            f"  - {ev['event_id']}（类型：{ev['event_type']}，"
+            f"NPC：{ev.get('npc_id','无')}，优先级：{ev['priority']}）："
+            f"触发条件={ev['trigger_conditions']}，基础对话={ev.get('base_messages',[])}"
+        )
+    lines.append("")
+    lines.append("请根据以上信息，选出一个最合适当前情况的事件，生成该 NPC 的两句对话。")
+    return "\n\n".join(lines)
+
+
 __all__ = [
     "MASTER_SYSTEM_PROMPT",
     "STAGE_LABEL",
+    "NPC_PERSONAS",
     "render_risks",
     "build_agent_initial_user_message",
     "encouragement_response",
+    "EVENT_GENERATION_PROMPT",
+    "build_event_generation_prompt",
 ]

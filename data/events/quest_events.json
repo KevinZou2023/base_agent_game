@@ -1,0 +1,32 @@
+[
+  {
+    "event_id": "evt_quest_mountain_arrival",
+    "event_type": "quest_milestone",
+    "trigger_type": "quest_progress",
+    "trigger_conditions": { "target_location": "mountain" },
+    "npc_id": "ahua",
+    "location": "mountain",
+    "priority": 7,
+    "cooldown_minutes": null,
+    "base_messages": [
+      "阿花：辛苦你跑这一趟青翠山！薯莨就在山坡南面，那边薯莨最靓。",
+      "阿花：记住，挖的时候带点根茎的泥，保鲜。"
+    ],
+    "effects": { "quest_progress": 1 }
+  },
+  {
+    "event_id": "evt_quest_village_arrival",
+    "event_type": "quest_milestone",
+    "trigger_type": "quest_progress",
+    "trigger_conditions": { "target_location": "village" },
+    "npc_id": "granny",
+    "location": "village",
+    "priority": 7,
+    "cooldown_minutes": null,
+    "base_messages": [
+      "阿婆：回来了？薯莨采得几好，山坡南面嗰遍係靓既。",
+      "阿婆：去染坊搵师傅处理吧，薯莨汁要趁新鲜用。"
+    ],
+    "effects": { "quest_progress": 2 }
+  }
+]

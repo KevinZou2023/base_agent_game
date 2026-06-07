@@ -1,0 +1,62 @@
+[
+  {
+    "event_id": "evt_ahua_rainy_warning",
+    "event_type": "weather_warning",
+    "trigger_type": "weather_change",
+    "trigger_conditions": { "weather": "rainy" },
+    "npc_id": "ahua",
+    "location": "village",
+    "priority": 5,
+    "cooldown_minutes": 120,
+    "base_messages": [
+      "阿花：哎呀，下雨天路滑，你去青翠山采薯莨要小心啊！",
+      "阿花：我这里有把旧伞，你要不要借去？"
+    ],
+    "effects": { "affinity_ahua": 3 }
+  },
+  {
+    "event_id": "evt_yeye_sunny_tip",
+    "event_type": "craft_tip",
+    "trigger_type": "weather_change",
+    "trigger_conditions": { "weather": "sunny" },
+    "npc_id": "yeye",
+    "location": "river",
+    "priority": 3,
+    "cooldown_minutes": 180,
+    "base_messages": [
+      "老爷爷：今日天色好，薯莨晒得透，布面乌亮得很。",
+      "老爷爷：趁太阳足，多刷两遍薯莨汁，晚上过乌效果更佳。"
+    ],
+    "effects": { "craft_bonus": true }
+  },
+  {
+    "event_id": "evt_granny_encourage",
+    "event_type": "villager_request",
+    "trigger_type": "time_based",
+    "trigger_conditions": { "minutes_since_start": 10 },
+    "npc_id": "granny",
+    "location": "village",
+    "priority": 2,
+    "cooldown_minutes": 240,
+    "base_messages": [
+      "阿婆：后生仔，学香云纱急不得，慢慢来。",
+      "阿婆：记着，三分料七分晒，莫心浮气躁。"
+    ],
+    "effects": { "affinity_granny": 2 }
+  },
+  {
+    "event_id": "evt_ahua_storm_warning",
+    "event_type": "weather_warning",
+    "trigger_type": "weather_change",
+    "trigger_conditions": { "weather": "cloudy" },
+    "npc_id": "ahua",
+    "location": "village",
+    "priority": 4,
+    "cooldown_minutes": 120,
+    "base_messages": [
+      "阿花：天色转阴了，怕是要变天。去青翠山的路有一段泥路，小心滑倒。",
+      "阿花：要不改天天晴再去？薯莨也不急在这一时。"
+    ],
+    "effects": { "affinity_ahua": 2 }
+  }
+]

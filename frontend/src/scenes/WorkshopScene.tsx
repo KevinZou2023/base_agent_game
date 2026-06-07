@@ -130,7 +130,7 @@ function ClothRack() {
 
 export function WorkshopScene() {
   const { go } = useNav()
-  const { finishCraft } = useGame()
+  const { finishCraft, completeQuestStep } = useGame()
   const [locked, setLocked] = useState(false)
 
   // R3F's canvas can latch a stale size inside the transform-scaled <Stage>; nudge it.
@@ -191,6 +191,7 @@ export function WorkshopScene() {
         <button
           className="workshop-finish"
           onClick={() => {
+            completeQuestStep(5)
             void finishCraft()
             go('showcase3d')
           }}

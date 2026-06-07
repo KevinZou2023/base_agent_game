@@ -24,7 +24,7 @@ const WEATHER_NOTE: Record<string, { text: string; cls: string }> = {
 
 export function DryingScene() {
   const { go } = useNav()
-  const { weather, setParams, patchPlayer, addHistory } = useGame()
+  const { weather, setParams, patchPlayer, addHistory, completeQuestStep } = useGame()
   const [dried, setDried] = useState<TimingResult[]>([])
   const canDry = weather !== 'rainy'
   const done = dried.length >= TARGET
@@ -47,6 +47,7 @@ export function DryingScene() {
     setParams({ sun_hours: sunHours, sun_total_days: sunDays, air_dry_hours: 8 })
     patchPlayer({ current_stage: 'parameter' })
     addHistory({ occurred_at: new Date().toISOString(), stage: 'parameter', note: `晒莨 ${sunDays}日` })
+    completeQuestStep(3)
     go('map')
   }
 

@@ -12,17 +12,20 @@ const MAX_DIPS = 12
 
 export function DyeWaitScene() {
   const { go } = useNav()
-  const { player, setParams, patchPlayer, addHistory } = useGame()
+  const { player, setParams, patchPlayer, addHistory, completeQuestStep, weather } = useGame()
   const [cycles, setCycles] = useState(0)
 
   const pattern = player.target_pattern ?? '云纹'
+  const weatherHint = weather === 'sunny' ? '晴天光线足，上色匀透！'
+    : weather === 'rainy' ? '雨天湿度大，浸染偏慢，道数稍多加两遍。'
+    : ''
   const hint =
     cycles === 0
-      ? '薯莨汁要反复浸染，点「浸入莨缸」一道道上色。'
+      ? `薯莨汁要反复浸染，点「浸入莨缸」一道道上色。${weatherHint}`
       : cycles < 4
-        ? '次数偏少，颜色会发淡——再浸几道。'
+        ? `次数偏少，颜色会发淡——再浸几道。${weatherHint}`
         : cycles <= 8
-          ? '上色匀透，这个火候正好。'
+          ? `上色匀透，这个火候正好。${weatherHint}`
           : '浸得够多了，再浸易过深、发死。'
 
   const done = () => {
@@ -33,6 +36,7 @@ export function DyeWaitScene() {
       stage: 'parameter',
       note: `浸染 ${cycles} 道 · 花纹「${pattern}」`,
     })
+    completeQuestStep(2)
     go('map')
   }
 

@@ -3,29 +3,73 @@ import { SceneRoot } from '../components/SceneRoot'
 import { Abs } from '../components/Abs'
 import { SceneChrome } from '../components/SceneChrome'
 import { useNav, type SceneId } from '../app/nav'
+import { useGame } from '../app/GameState'
+import { GOLDEN_PATH } from '../app/quest'
 import './VillagerHomeScene.css'
 
+// 根据当前任务进度生成动态对话
+function buildTalkLines(questStep: number, completedSteps: Set<number>, name: string): string[] {
+  const step = questStep
+  const done = completedSteps.has(step)
+
+  if (step === -1 || step === 0) {
+    if (step === -1) {
+      return [
+        `${name}：你可以先去找师父学学基本功，他就在地图左上方的院子里。`,
+        '师父会告诉你香云纱制作的每一步，跟着他学就是了。',
+      ]
+    }
+    return [
+      `${name}：先去拜师吧，师父在「师父的家」，地图左上角。`,
+      '拜师之后，就可以开始学习制作香云纱的每一步工序了。',
+    ]
+  }
+
+  if (done) {
+    const next = GOLDEN_PATH[step]
+    if (!next) {
+      return [
+        `${name}：你真厉害！香云纱的六道工序都学完了！`,
+        '这下你已经是半个师傅啦，继续努力，把这门手艺发扬光大！',
+      ]
+    }
+    const locName: Record<string, string> = {
+      master: '师父的家', mountain: '青翠山', dye: '染坊',
+      drying: '晾晒场', river: '乌尔河', weaving: '织布坊',
+    }
+    return [
+      `${name}：干得好！下一步是「${next.objective}」。`,
+      `去「${locName[next.targetLoc] ?? next.targetLoc}」继续吧，那里有你需要的东西。`,
+    ]
+  }
+
+  const current = GOLDEN_PATH[step]
+  const locName: Record<string, string> = {
+    master: '师父的家', mountain: '青翠山', dye: '染坊',
+    drying: '晾晒场', river: '乌尔河', weaving: '织布坊',
+  }
+  return [
+    `${name}：你现在应该在学「${current.objective}」。`,
+    `去「${locName[current.targetLoc] ?? current.targetLoc}」看看吧，完成之后再来说。`,
+  ]
+}
+
 // 村民的家 — Figma nodes 28:1284 (阿花) / 28:1803 (阿才) / 28:2030 (老太太).
-// Room background + villager portrait + a 2x2 action menu (对话/邀请/送礼/情报).
-// 好感为负 → 对方拒绝见你（Figma 100:8500）。
-// 送礼 → 阿花赠礼（100:8670）：送对花→回礼香囊+好感。邀请 → 阿花邀请（85:3927）：选活动。
 const VILLAGERS: Record<
   string,
-  { name: string; portrait: string; px: number; affinity: number; giftHint: string; talkLines?: string[]; isMaster?: boolean }
+  { name: string; portrait: string; px: number; affinity: number; giftHint: string; staticLines?: string[]; isMaster?: boolean }
 > = {
-  // 立绘从 Figma 村民合集（imgRef ff8c2557）裁出：阿花=年轻女子、阿才=年轻男子；阿婆另一张。
   ahua: { name: '阿花', portrait: '/art/villager-ahua.png', px: 1179, affinity: 21, giftHint: '提示：年轻的女孩子总喜欢一些美而香的花朵' },
   acai: { name: '阿才', portrait: '/art/villager-acai.png', px: 1031, affinity: -2, giftHint: '提示：他似乎对什么都提不起兴趣' },
   popo: {
     name: '阿婆', portrait: '/art/villager-popo.png', px: 1144, affinity: 71,
     giftHint: '提示：阿婆爱花，尤喜清香的花朵',
-    talkLines: [
+    staticLines: [
       '后生仔，学香云纱是门好手艺，三分料七分晒，急不得。',
       '记住：薯莨反复浸染、河泥过乌、烈日暴晒，缺一不可。',
       '好好学，这门老手艺就靠你们后生传下去咯。',
     ],
   },
-  // 师父的家（Figma 28:304）— 立绘=合集左侧长者；对话→聊天页；桌上有百科书；从地图进入。
   master: {
     name: '师父', portrait: '/art/villager-master.png', px: 1080, affinity: 100,
     giftHint: '提示：师父常年与草木为伴，或许会喜欢一束清香',
@@ -57,10 +101,14 @@ const INTEL = '制作一块上等香云纱需要天时地利人和三重结合�
 
 export function VillagerHomeScene() {
   const { scene, go } = useNav()
+  const { questStep, completedSteps } = useGame()
   const v = VILLAGERS[scene] ?? VILLAGERS.ahua
   const [modal, setModal] = useState<ActKind | null>(null)
   const [giftMsg, setGiftMsg] = useState<string | null>(null)
   const [talkIdx, setTalkIdx] = useState(0)
+
+  // 阿花、师父、阿婆：对话受任务进度影响（师父先给指引再进 AI 聊天）
+  const talkLines = buildTalkLines(questStep, completedSteps, v.name)
 
   // 好感为负 → 对方拒绝见你（Figma 村庄-对方拒绝见你 100:8500）
   if (v.affinity < 0) {
@@ -81,10 +129,15 @@ export function VillagerHomeScene() {
 
   const openModal = (k: ActKind) => {
     if (k === 'talk') {
-      // 师父 → 聊天页；阿花(任务发布者) → 突发任务；其余村民 → 各自对话台词
       if (v.isMaster) {
-        go('masterChat')
-      } else if (v.talkLines && v.talkLines.length) {
+        // 师父：先展示任务指引，最后一句进 AI 聊天页
+        if (talkLines && talkLines.length > 0) {
+          setTalkIdx(0)
+          setModal('talk')
+        } else {
+          go('masterChat')
+        }
+      } else if (talkLines && talkLines.length) {
         setTalkIdx(0)
         setModal('talk')
       } else {
@@ -182,17 +235,22 @@ export function VillagerHomeScene() {
               </>
             )}
 
-            {modal === 'talk' && v.talkLines && (
+            {modal === 'talk' && talkLines && (
               <>
                 <span className="vh-modal-title">{v.name}</span>
-                <span className="vh-modal-text">{v.talkLines[talkIdx]}</span>
+                <span className="vh-modal-text">{talkLines[talkIdx]}</span>
                 <span className="vh-modal-opts">
-                  <button
-                    className="vh-opt"
-                    onClick={() => (talkIdx < v.talkLines!.length - 1 ? setTalkIdx(talkIdx + 1) : close())}
-                  >
-                    {talkIdx < v.talkLines.length - 1 ? '下一句' : '知道了'}
-                  </button>
+                  {talkIdx < talkLines.length - 1 ? (
+                    <button className="vh-opt" onClick={() => setTalkIdx(talkIdx + 1)}>
+                      下一句
+                    </button>
+                  ) : v.isMaster ? (
+                    <button className="vh-opt" onClick={() => { close(); go('masterChat') }}>
+                      去找师父聊聊
+                    </button>
+                  ) : (
+                    <button className="vh-opt" onClick={close}>知道了</button>
+                  )}
                 </span>
               </>
             )}
