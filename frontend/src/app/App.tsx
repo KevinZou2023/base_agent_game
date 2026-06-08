@@ -52,8 +52,14 @@ const SCENES: Partial<Record<SceneId, ComponentType>> = {
   weaving: WorkshopScene, // 织布坊 → 第一人称 3D 工坊
 }
 
+function getInitialScene(): SceneId {
+  if (!import.meta.env.DEV) return 'start'
+  const scene = new URLSearchParams(window.location.search).get('scene') as SceneId | null
+  return scene && SCENES[scene] ? scene : 'start'
+}
+
 export function App() {
-  const [scene, setScene] = useState<SceneId>('start')
+  const [scene, setScene] = useState<SceneId>(() => getInitialScene())
   useEffect(() => {
     void checkBackend()
     if (import.meta.env.DEV) {

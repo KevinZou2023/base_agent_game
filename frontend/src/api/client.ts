@@ -120,20 +120,34 @@ export async function updateUserState(
 // ---------------------------------------------------------------------------
 
 function mockMasterChat(req: MasterChatRequest): AgentResponse {
-  const p = req.player_state.parameters
+  const eventChanges =
+    req.operation_event?.type === 'param_change' && req.operation_event.changes
+      ? (req.operation_event.changes as Partial<typeof req.player_state.parameters>)
+      : {}
+  const p = { ...req.player_state.parameters, ...eventChanges }
   const risks: string[] = []
   if (p.sun_total_days < 2) risks.push('晒莨不足')
   if (p.dye_cycles < 4) risks.push('浸染次数偏少')
+  if (p.shuliang_concentration < 0.3) risks.push('薯莨浓度偏低')
+  if (p.dye_water_temp > 50) risks.push('染液水温过高')
+  if (p.dye_water_temp < 15) risks.push('染液水温过低')
+  if (p.sun_hours < 4) risks.push('单次晾晒偏短')
+  if (p.wu_mud_thickness < 0.3) risks.push('过乌泥太薄')
+  if (p.wu_duration_minutes > 0 && p.wu_duration_minutes < 30) risks.push('过乌时间偏短')
+  if (p.wu_duration_minutes > 120) risks.push('过乌时间过长')
+  if (p.wash_water_temp > 35) risks.push('水洗水温过高')
   const msg = req.message?.trim()
   const reply = msg
     ? `（离线示范）你问「${msg}」。香云纱讲究薯莨反复浸染、烈日暴晒、河泥过乌——慢工出细活。${risks.length ? '眼下' + risks.join('、') + '，成色会偏淡。' : '你这参数稳妥，可以下缸了。'}`
-    : '（离线示范）后生，香云纱三分料七分晒，莫急。先把薯莨汁刷匀了。'
+    : risks.length
+      ? `（离线示范）后生，这一步我看到 ${risks.join('、')}。先把参数调稳，再继续做。`
+      : '（离线示范）后生，这一步参数稳，照这个节奏继续。'
   return {
     master_reply: reply,
     risk_tags: risks,
     hint_type: risks.length ? 'warn' : 'encourage',
     intervention_level: risks.length ? 2 : 1,
-    recommended_actions: risks.length ? ['增加晒莨天数', '提高浸染次数'] : ['保持当前节奏'],
+    recommended_actions: risks.length ? ['按师傅提醒调整工艺参数'] : ['保持当前节奏'],
     knowledge_used: ['craft_step:shuliang_dye', 'failure_case:晒莨不足'],
     operation_summary: '离线 mock 反馈',
     stage: req.player_state.current_stage,
